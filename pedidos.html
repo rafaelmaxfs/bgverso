@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/style.css">
+    <script src="src/tema.js"></script>
+    <script src="src/script.js" defer></script>
+    <title>Pedidos | BGVerso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+    <style>
+        /* ===== Página de Pedidos (específico desta página; componentes em style.css) ===== */
+        .pedido-card { justify-content: space-between; align-items: flex-start; }
+        .pedido-info { width: 60%; }
+        .pedido-info .label { display: block; font-size: 16px; color: var(--preto); }
+        .pedido-codigo { font-size: 48px; margin-bottom: 2vw; color: var(--preto); }
+        .pedido-info h2 { font-size: 56px; margin-bottom: 1vw; color: var(--preto); }
+        .pedido-info .itens-titulo { font-size: 16px; margin-top: 1vw; }
+        .pedido-info .itens-texto { font-size: 18px; margin-top: 0.5vw; line-height: 1.4; }
+        .pedido-info .valor { font-size: 18px; margin-top: 3vw; }
+        .pedido-entrega { width: 35%; }
+        .pedido-entrega h2 { font-size: 48px; margin-bottom: 1vw; color: var(--preto); }
+        .etapas { list-style: none; display: flex; flex-direction: column; gap: 1.2vh; padding: 1.2vh 1vw; border: 4px solid var(--amarelo); border-radius: 20px; }
+        .etapas li { display: flex; align-items: center; gap: 12px; font-size: 18px; color: var(--preto); }
+        .etapas li::before { content: ""; flex: 0 0 18px; height: 18px; border-radius: 50%; border: 3px solid var(--amarelo); background-color: var(--branco); }
+        .etapas li.concluida::before { background-color: #2EE37A; border-color: #2EE37A; }
+        .acoes { display: flex; gap: 1vw; margin-top: 2vw; }
+        .pedidos-vazio { font-size: 20px; padding: 2vh 1vw; color: var(--preto); }
+
+            </style>
+    <link rel="stylesheet" href="src/mobile.css">
+</head>
+<body>
+    <header class="header">
+        <a class="logo" href="index.html">
+            <img src="src/img/logo.png" alt="">
+        </a>
+
+        <nav class="menu">
+            <ul class="menu-links">
+                <li><a href="index.html">Produtos</a></li>
+                <li><a href="pedidos.html" aria-current="page">Pedidos</a></li>
+                <li><a href="carrinho.html">Carrinho</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+
+            <button class="btn-menu" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+
+        <button class="btn-destaque" type="button">
+            <h1>*</h1>
+        </button>
+    </header>
+
+    <nav>
+        <div id="div-nav-up">
+            <h1>PEDIDOS</h1>
+        </div>
+        <div id="div-nav-down">
+            <ul>
+                <li><input type="search" id="pesquisa" name="pesquisa" placeholder="PESQUISE :" aria-label="Pesquisar nesta página" autocomplete="off"></li>
+                <li><a href="#em-curso">Pedidos em curso</a></li>
+                <li><a href="#historico">Histórico</a></li>
+                <li><a href="#pedir-novamente">Pedir novamente</a></li>
+                <li><a href="#atendimento">Atendimento</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="categoria compacta" id="em-curso">
+            <h1>Pedidos em curso</h1>
+            <div class="conteudo-categoria">
+                <div id="lista-pedidos-realizados"></div>
+            </div>
+        </div>
+        <div class="categoria compacta" id="historico">
+            <h1>Histórico</h1>
+            <div class="conteudo-categoria">
+                <div id="lista-historico-pedidos"></div>
+            </div>
+        </div>
+        <div class="categoria compacta" id="pedir-novamente">
+            <h1>Pedir novamente</h1>
+            <div class="conteudo-categoria">
+                <div id="lista-pedir-novamente"></div>
+            </div>
+        </div>
+        <div class="categoria compacta" id="atendimento">
+            <h1>Atendimento</h1>
+            <div class="conteudo-categoria">
+                <div class="cartao pedido-card">
+                    <div class="pedido-info">
+                        <span class="label">Precisa de ajuda com o seu pedido?</span>
+                        <p class="itens-texto">Fale com a nossa equipe pelo WhatsApp ou tire as suas dúvidas.</p>
+                        <div class="acoes">
+                            <button class="btn" type="button">Falar no WhatsApp</button>
+                            <button class="btn secundario" type="button">Enviar dúvida</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
+
+
+
+

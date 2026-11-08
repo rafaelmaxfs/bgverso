@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/style.css">
+    <script src="src/tema.js"></script>
+    <script src="src/script.js" defer></script>
+    <script src="src/pedido.js" defer></script>
+    <title>Carrinho | BGVerso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+    <style>
+        /* ===== Página do Carrinho (específico desta página; componentes em style.css) ===== */
+        .item-carrinho { align-items: center; }
+        .item-carrinho img { width: 16vw; height: auto; aspect-ratio: 1.2; object-fit: cover; border-radius: 1.5vw; }
+        .item-descricao { flex: 1; font-size: 22px; line-height: 1.4; color: var(--preto); }
+        .item-preco { font-size: 56px; color: var(--preto); white-space: nowrap; }
+        .item-quantidade { display: flex; flex-direction: column; align-items: center; font-size: 22px; color: var(--preto); line-height: 1.3; }
+        .item-quantidade button { background: none; border: none; font-size: 26px; cursor: pointer; color: var(--preto); }
+        .frete { display: flex; flex-direction: column; justify-content: center; }
+        .frete .valor-frete { font-size: 64px; color: var(--preto); }
+        .opcoes-pagamento { display: flex; flex-wrap: wrap; gap: 1vw; }
+        .opcoes-pagamento label { display: flex; align-items: center; gap: 8px; font-size: 20px; padding: 1vh 1.5vw; border-radius: 2vw; background-color: var(--amarelo); cursor: pointer; }
+        .resumo { justify-content: space-between; font-size: 22px; }
+        .resumo .total { font-size: 56px; }
+        .endereco-salvo { width: 100%; border: none; border-bottom: 3px solid var(--amarelo); padding: 0.6vh 0.4vw; font-size: 18px; background: transparent; color: var(--preto); outline: none; cursor: pointer; }
+
+            </style>
+    <link rel="stylesheet" href="src/mobile.css">
+</head>
+<body>
+    <header class="header">
+        <a class="logo" href="index.html">
+            <img src="src/img/logo.png" alt="">
+        </a>
+
+        <nav class="menu">
+            <ul class="menu-links">
+                <li><a href="index.html">Produtos</a></li>
+                <li><a href="pedidos.html">Pedidos</a></li>
+                <li><a href="carrinho.html" aria-current="page">Carrinho</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+
+            <button class="btn-menu" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+
+        <button class="btn-destaque" type="button">
+            <h1>*</h1>
+        </button>
+    </header>
+
+    <nav>
+        <div id="div-nav-up">
+            <h1>CARRINHO</h1>
+        </div>
+        <div id="div-nav-down">
+            <ul>
+                <li><input type="search" id="pesquisa" name="pesquisa" placeholder="PESQUISE :" aria-label="Pesquisar nesta página" autocomplete="off"></li>
+                <li><a href="#itens">Itens</a></li>
+                <li><a href="#endereco">Endereço</a></li>
+                <li><a href="#pagamento">Pagamento</a></li>
+                <li><a href="#pedido">Pedido</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="categoria compacta" id="itens">
+            <h1>Itens</h1>
+            <div class="conteudo-categoria">
+                <div id="lista-itens"></div>
+            </div>
+        </div>
+
+        <div class="categoria compacta" id="endereco">
+            <h1>Endereço</h1>
+            <div class="conteudo-categoria">
+                <div class="cartao coluna">
+                    <label for="endereco-salvo">Endereço salvo:</label>
+                    <select id="endereco-salvo" class="endereco-salvo"></select>
+                </div>
+                <div class="cartao coluna">
+                    <div class="grade-campos tres-colunas">
+                        <div>
+                            <label for="cep">CEP:</label>
+                            <input type="text" id="cep" name="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" autocomplete="postal-code">
+                        </div>
+                        <div>
+                            <label for="numero">Número:</label>
+                            <input type="text" id="numero" name="numero" inputmode="numeric" autocomplete="address-line2" maxlength="10">
+                        </div>
+                        <div class="frete">
+                            <span>FRETE:</span>
+                            <span class="valor-frete" id="valor-frete">R$ 17,32</span>
+                        </div>
+                        <div>
+                            <label for="rua">Rua:</label>
+                            <input type="text" id="rua" name="rua" maxlength="100">
+                        </div>
+                        <div>
+                            <label for="complemento">Complemento (opcional):</label>
+                            <input type="text" id="complemento" name="complemento" maxlength="50">
+                        </div>
+                        <div></div>
+                        <div>
+                            <label for="bairro">Bairro:</label>
+                            <input type="text" id="bairro" name="bairro" maxlength="60">
+                        </div>
+                        <div>
+                            <label for="referencia">Ponto de referência (opcional):</label>
+                            <input type="text" id="referencia" name="referencia" maxlength="100">
+                        </div>
+                        <div>
+                            <label for="cidade">Cidade:</label>
+                            <input type="text" id="cidade" name="cidade" maxlength="60">
+                        </div>
+                        <div>
+                            <label for="uf">UF:</label>
+                            <input type="text" id="uf" name="uf" maxlength="2" placeholder="SP">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="categoria compacta" id="pagamento">
+            <h1>Pagamento</h1>
+            <div class="conteudo-categoria">
+                <div class="cartao coluna">
+                    <div class="opcoes-pagamento">
+                        <label><input type="radio" name="pagamento" value="pix" checked> Pix</label>
+                        <label><input type="radio" name="pagamento" value="cartao"> Cartão</label>
+                        <label><input type="radio" name="pagamento" value="dinheiro"> Dinheiro</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="categoria compacta" id="pedido">
+            <h1>Pedido</h1>
+            <div class="conteudo-categoria">
+                <div class="cartao resumo">
+                    <div>
+                        <p>Subtotal: <span id="subtotal">R$ 22,90</span></p>
+                        <p>Frete: <span id="frete">R$ 17,32</span></p>
+                    </div>
+                    <p class="total" id="total">R$ 40,22</p>
+                    <button class="btn secundario" id="finalizar-pedido" type="button">Finalizar pedido</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* Máscara do CEP: 00000-000 (aceita apenas dígitos, máximo de 8) */
+        function mascaraCep(valor) {
+            const digitos = valor.replace(/\D/g, '').slice(0, 8);
+            return digitos.length > 5 ? digitos.slice(0, 5) + '-' + digitos.slice(5) : digitos;
+        }
+
+        /* Campo Número: aceita apenas dígitos */
+        function mascaraNumero(valor) {
+            return valor.replace(/\D/g, '');
+        }
+
+        const inputCep = document.getElementById('cep');
+        const inputNumero = document.getElementById('numero');
+
+        inputCep.addEventListener('input', () => {
+            inputCep.value = mascaraCep(inputCep.value);
+        });
+
+        inputNumero.addEventListener('input', () => {
+            inputNumero.value = mascaraNumero(inputNumero.value);
+        });
+    </script>
+</body>
+</html>
+
+
+

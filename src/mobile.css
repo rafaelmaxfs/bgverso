@@ -1,0 +1,667 @@
+/* =========================================================================
+   INTERFACE MOBILE (telefone, até 768px)
+   Camada única, carregada por último em todas as páginas. Não altera o desktop.
+   Estrutura: cabeçalho compacto -> faixa de categorias fixa -> conteúdo
+   -> barra inferior de abas fixa (Produtos, Pedidos, Carrinho, Perfil).
+   ========================================================================= */
+@media (max-width: 768px) {
+
+  :root {
+    --altura-cabecalho: 60px;
+    --altura-barra: 74px;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    display: block;
+    overflow: visible;
+    background-color: var(--branco);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  /* Campos em 16px evitam o zoom automático do iOS ao focar */
+  body input,
+  body textarea,
+  body select {
+    font-size: 16px;
+  }
+
+  /* ----- 1. Cabeçalho compacto: logo + botão de tema ----- */
+  .header {
+    position: sticky;
+    top: 0;
+    left: auto;
+    right: auto;
+    z-index: 30;
+    width: 100%;
+    height: var(--altura-cabecalho);
+    padding: 0 12px;
+    gap: 8px;
+    justify-content: space-between;
+    background: var(--branco);
+  }
+
+  .logo img {
+    display: block;
+    width: 128px;
+    height: 42px;
+    margin: 0;
+    object-fit: contain;
+  }
+
+  .btn-destaque {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    border-radius: 14px;
+    font-size: 22px;
+  }
+
+  .btn-destaque h1 {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  /* O hambúrguer deixa de existir: a navegação vai para a barra inferior */
+  .btn-menu {
+    display: none;
+  }
+
+  /* ----- 2. Barra inferior de abas ----- */
+  .header .menu {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 40;
+    display: flex;
+    width: auto;
+    height: var(--altura-barra);
+    min-width: 0;
+    flex: none;
+    overflow: visible;
+    background: var(--amarelo);
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  }
+
+  .menu-links {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    list-style: none;
+  }
+
+  .menu-links li {
+    display: flex;
+    flex: 1 1 0;
+  }
+
+  .menu-links a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 3px;
+    padding: 4px 2px;
+    border-radius: 16px;
+    color: var(--preto);
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+
+  /* Página atual: anula o sublinhado do desktop (regra com mais especificidade) */
+  .menu-links a[aria-current="page"] {
+    background: var(--vermelho);
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+
+  .menu-links a:active {
+    opacity: 0.7;
+  }
+
+  .menu-links a:focus-visible,
+  .btn-destaque:focus-visible,
+  .btn-qtd:focus-visible,
+  .item-quantidade button:focus-visible,
+  .btn:focus-visible {
+    outline: 3px solid var(--preto);
+    outline-offset: 2px;
+  }
+
+  /* ----- 3. Faixa de categorias (pesquisa + âncoras) fixa abaixo do cabeçalho ----- */
+  body > nav {
+    position: sticky;
+    top: var(--altura-cabecalho);
+    z-index: 20;
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--branco);
+  }
+
+  body > nav #div-nav-up {
+    display: none;
+  }
+
+  body > nav #div-nav-down {
+    display: block;
+    width: 100%;
+    height: auto;
+    padding: 8px 12px;
+    border-radius: 0;
+    background-color: var(--vermelho);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body > nav #div-nav-down ul {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    margin: 0;
+    padding-right: 12px;
+  }
+
+  body > nav #div-nav-down ul li {
+    flex: 0 0 auto;
+    margin: 0;
+    list-style: none;
+  }
+
+  body > nav #div-nav-down ul li input {
+    width: 150px;
+    height: 38px;
+    margin: 0;
+    padding: 0 14px;
+    border: none;
+    border-radius: 19px;
+    font-family: system-ui, sans-serif;
+    font-size: 16px;
+  }
+
+  body > nav #div-nav-down ul li a {
+    display: block;
+    margin: 0;
+    padding: 9px 14px;
+    border: 2px solid rgb(255 255 255 / 55%);
+    border-radius: 19px;
+    color: #FFFFFF;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  body > nav #div-nav-down ul li a.ativo {
+    background-color: var(--amarelo);
+    border-color: var(--amarelo);
+    color: var(--preto);
+  }
+
+
+  /* ----- 4. Conteúdo ----- */
+  main {
+    position: static;
+    top: auto;
+    left: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding-bottom: calc(var(--altura-barra) + 32px);
+    border-radius: 20px 20px 0 0;
+    background-color: var(--vermelho);
+  }
+
+  main h1 {
+    margin: 22px 16px 10px;
+    font-size: 22px;
+    letter-spacing: 0;
+    color: #FFFFFF;
+  }
+
+  .categoria {
+    display: block;
+    min-height: 0;
+    flex: none;
+    contain: none;
+    scroll-margin-top: 124px;
+  }
+
+  .conteudo-categoria {
+    margin: 0 12px;
+    padding: 0 0 8px;
+  }
+
+  /* Produtos em grade de 2 colunas */
+  .categoria:not(.compacta) .conteudo-categoria {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .sabor {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 8px 8px 10px;
+    border-radius: 18px;
+    background-color: var(--branco);
+  }
+
+  .sabor img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    margin: 0;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .sabor p {
+    flex: 1;
+    width: auto;
+    margin: 8px 4px 0;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .sabor h3 {
+    margin: 6px 4px 0;
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  /* Controlo de quantidade em linha: (−) n (+) */
+  .sabor h4 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin: 8px 0 0;
+    font-size: 16px;
+    text-align: left;
+  }
+
+  .sabor h4 br {
+    display: none;
+  }
+
+  .btn-qtd,
+  .item-quantidade button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 12px;
+    background-color: var(--amarelo);
+    color: var(--preto);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .btn-qtd:active,
+  .item-quantidade button:active {
+    transform: scale(0.94);
+  }
+
+  .qtd {
+    min-width: 30px;
+    font-size: 15px;
+    text-align: center;
+  }
+
+  /* ----- 5. Páginas internas: cartões em coluna única ----- */
+  .categoria.compacta {
+    display: block;
+  }
+
+  .cartao {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    font-size: 16px;
+  }
+
+  .cartao.coluna {
+    gap: 10px;
+  }
+
+  .cartao.coluna > h3 {
+    margin: 0 0 4px;
+    font-size: 20px;
+  }
+
+  .grade-campos,
+  .grade-campos.tres-colunas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+    flex: none;
+  }
+
+  .grade-campos > div:empty {
+    display: none;
+  }
+
+  .grade-campos label,
+  .campo-form label,
+  .cartao.coluna > label {
+    display: block;
+    margin-bottom: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--preto);
+  }
+
+  .grade-campos input:not([type="radio"]):not([type="checkbox"]),
+  .campo-form input:not([type="radio"]):not([type="checkbox"]),
+  .cartao.coluna > input {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 2px solid var(--amarelo);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--preto);
+    font-size: 16px;
+    outline: none;
+  }
+
+  .campo-form input[aria-invalid="true"] {
+    border-color: var(--vermelho);
+  }
+
+  .campo-form .erro {
+    font-size: 14px;
+  }
+
+  .acoes-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 6px;
+  }
+
+  .btn {
+    min-height: 48px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-size: 17px;
+  }
+
+  .btn.secundario {
+    color: #FFFFFF;
+  }
+
+  .acoes-form .btn,
+  .cartao.coluna > .btn,
+  .resumo .btn {
+    width: 100%;
+  }
+
+  .acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .acoes .btn {
+    width: 100%;
+  }
+
+  .aviso-pesquisa {
+    margin: 14px 12px 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 16px;
+  }
+
+  .cartao-salvo {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 0;
+    font-size: 15px;
+  }
+
+  .cartao-salvo p {
+    flex: 1 1 180px;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Pagamento: três opções lado a lado; a escolhida fica em vermelho */
+  .opcoes-pagamento {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .opcoes-pagamento label {
+    justify-content: center;
+    min-height: 48px;
+    padding: 10px 6px;
+    border-radius: 14px;
+    background-color: var(--amarelo);
+    color: var(--preto);
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .opcoes-pagamento label:has(input:checked) {
+    background-color: var(--vermelho);
+    color: #FFFFFF;
+  }
+
+  .frete {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background-color: var(--amarelo);
+  }
+
+  .frete .valor-frete {
+    font-size: 22px;
+  }
+
+  /* Resumo do pedido: empilhado */
+  .resumo {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    font-size: 16px;
+  }
+
+  .resumo > div p {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 6px;
+    font-size: 16px;
+  }
+
+  .resumo .total {
+    font-size: 36px;
+    text-align: right;
+  }
+
+  /* ----- 6. Carrinho: item com miniatura, descrição e quantidade ----- */
+  .item-carrinho {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 4px 12px;
+  }
+
+  .item-carrinho img {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 84px;
+    height: 84px;
+    aspect-ratio: auto;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  .item-descricao {
+    grid-column: 2;
+    grid-row: 1;
+    flex: none;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .item-preco {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .item-quantidade {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 16px;
+  }
+
+  /* ----- 7. Pedidos ----- */
+  .pedido-card {
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+
+  .pedido-info,
+  .pedido-entrega {
+    width: 100%;
+  }
+
+  .pedido-entrega {
+    margin-top: 14px;
+  }
+
+  .pedido-info .label {
+    font-size: 14px;
+  }
+
+  .pedido-codigo {
+    margin-bottom: 8px;
+    font-size: 28px;
+  }
+
+  .pedido-info h2,
+  .pedido-entrega h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+  }
+
+  .pedido-info .itens-titulo {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .pedido-info .itens-texto {
+    margin-top: 4px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .pedido-info .valor {
+    margin-top: 10px;
+    font-size: 17px;
+  }
+
+  .etapas {
+    gap: 10px;
+    padding: 12px 14px;
+    border-width: 3px;
+    border-radius: 16px;
+  }
+
+  .etapas li {
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .etapas li::before {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* ----- 8. Perfil ----- */
+  .avatar {
+    display: none;
+  }
+
+  .cartao-dados {
+    justify-content: flex-start;
+  }
+
+  .cabecalho-enderecos {
+    gap: 8px;
+    padding: 22px 4px 0;
+  }
+
+  .cabecalho-enderecos h1 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .cartao.coluna > input.apelido-endereco {
+    margin-bottom: 8px;
+    font-size: 20px;
+  }
+}

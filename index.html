@@ -1,11 +1,214 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="src/style.css">
+    <script src="src/tema.js"></script>
+    <script src="src/script.js" defer></script>
+    <title>Início | BGVerso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/mobile.css">
 </head>
 <body>
+    <header class="header">
+        <a class="logo" href="index.html">
+            <img src="src/img/logo.png" alt="">
+        </a>
+
+        <nav class="menu">
+            <ul class="menu-links">
+                <li><a href="index.html">Produtos</a></li>
+                <li><a href="pedidos.html">Pedidos</a></li>
+                <li><a href="carrinho.html">Carrinho</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+
+            <button class="btn-menu" type="button" aria-label="Abrir menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+
+        <button class="btn-destaque" type="button">
+            <h1>*</h1>
+        </button>
+    </header>
+
+    <nav>
+        <div id="div-nav-up">
+            <h1>PRODUTOS</h1>
+        </div>
+        <div id="div-nav-down">
+            <ul>
+                <li><input type="search" id="pesquisa" name="pesquisa" placeholder="PESQUISE :" aria-label="Pesquisar nesta página" autocomplete="off"></li>
+                <li><a href="#classicos">Clássicos</a></li>
+                <li><a href="#gourmet">Gourmet</a></li>
+                <li><a href="#frango-veg">Frango &amp; Veg</a></li>
+                <li><a href="#extras">Extras</a></li>
+                <li><a href="#bebidas">Bebidas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+
+    <main>
+        <div class="categoria" id="classicos">
+            <h1>CLÁSSICOS</h1>
+            <div class="conteudo-categoria">
+                <div class="sabor" data-id="classicos-1" data-produto="1" data-preco="22.90">
+                    <img src="src/img/produtos/produto-1.svg" alt="">
+                    <p>Smash Simples: Pão brioche, blend 90g, queijo cheddar fatiado e maionese da casa.</p>
+                    <h3>R$ 22,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="classicos-2" data-produto="2" data-preco="24.90">
+                    <img src="src/img/produtos/produto-2.svg" alt="">
+                    <p>Smash Duplo Bacon: Pão brioche, 2x blends 90g, 2x queijo cheddar, bacon crocante e maionese especial.</p>
+                    <h3>R$ 24,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="classicos-3" data-produto="3" data-preco="26.90">
+                    <img src="src/img/produtos/produto-3.svg" alt="">
+                    <p>Cheese Salada: Pão brioche, blend 150g, queijo prato, alface americana, tomate e molho verde.</p>
+                    <h3>R$ 26,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="classicos-4" data-produto="4" data-preco="28.90">
+                    <img src="src/img/produtos/produto-4.svg" alt="">
+                    <p>X-Bacon Especial: Pão com gergelim, blend 150g, queijo cheddar, muito bacon e molho barbecue.</p>
+                    <h3>R$ 28,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="classicos-5" data-produto="5" data-preco="32.90">
+                    <img src="src/img/produtos/produto-5.svg" alt="">
+                    <p>Classic Burger: Pão com gergelim, blend 150g, queijo cheddar, cebola roxa, picles e molho artesanal.</p>
+                    <h3>R$ 32,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+            </div>
+        </div>
+        <div class="categoria" id="gourmet">
+            <h1>GOURMET</h1>
+            <div class="conteudo-categoria">
+                <div class="sabor" data-id="gourmet-1" data-produto="6" data-preco="35.90">
+                    <img src="src/img/produtos/produto-6.svg" alt="">
+                    <p>Gourmet Trufado: Pão brioche, blend 180g, queijo emmental, cogumelos salteados e maionese trufada.</p>
+                    <h3>R$ 35,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="gourmet-2" data-produto="7" data-preco="37.90">
+                    <img src="src/img/produtos/produto-7.svg" alt="">
+                    <p>Costela Premium: Pão australiano, blend de costela 180g, queijo provolone e molho barbecue defumado.</p>
+                    <h3>R$ 37,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="gourmet-3" data-produto="8" data-preco="39.90">
+                    <img src="src/img/produtos/produto-8.svg" alt="">
+                    <p>Bacon Jam Burger: Pão australiano, blend 180g, cheddar fatiado, geleia de bacon artesanal e rúcula.</p>
+                    <h3>R$ 39,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="gourmet-4" data-produto="9" data-preco="40.90">
+                    <img src="src/img/produtos/produto-9.svg" alt="">
+                    <p>Cheddar Melt: Pão australiano, blend 180g, creme de cheddar cremoso e cebola caramelizada no shoyu.</p>
+                    <h3>R$ 40,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+            </div>
+        </div>
+        <div class="categoria" id="frango-veg">
+            <h1>FRANGO &amp; VEG</h1>
+            <div class="conteudo-categoria">
+                <div class="sabor" data-id="frango-veg-1" data-produto="10" data-preco="17.90">
+                    <img src="src/img/produtos/produto-10.svg" alt="">
+                    <p>Chicken Crispy: Pão brioche, sobrecoxa empanada super crocante, queijo prato, alface e maionese temperada.</p>
+                    <h3>R$ 17,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="frango-veg-2" data-produto="11" data-preco="19.90">
+                    <img src="src/img/produtos/produto-11.svg" alt="">
+                    <p>Chicken BBQ: Pão brioche, frango empanado, queijo cheddar, bacon e molho barbecue.</p>
+                    <h3>R$ 19,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="frango-veg-3" data-produto="12" data-preco="21.90">
+                    <img src="src/img/produtos/produto-12.svg" alt="">
+                    <p>Veggie Falafel: Pão brioche, halloumi ou hambúrguer de grão-de-bico, alface, tomate e maionese de ervas.</p>
+                    <h3>R$ 21,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="frango-veg-4" data-produto="13" data-preco="23.90">
+                    <img src="src/img/produtos/produto-13.svg" alt="">
+                    <p>Veggie Futuro: Pão com gergelim, blend vegetal, queijo vegano, cebola roxa, alface e tomate.</p>
+                    <h3>R$ 23,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+            </div>
+        </div>
+        <div class="categoria" id="extras">
+            <h1>EXTRAS</h1>
+            <div class="conteudo-categoria">
+                <div class="sabor" data-id="extras-1" data-produto="14" data-preco="14.90">
+                    <img src="src/img/produtos/produto-14.svg" alt="">
+                    <p>Batata Frita Tradicional: Porção individual de batata palito crocante e sequinha.</p>
+                    <h3>R$ 14,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="extras-2" data-produto="15" data-preco="16.90">
+                    <img src="src/img/produtos/produto-15.svg" alt="">
+                    <p>Batata Rústica com Alecrim: Gomos temperados com sal grosso, alho e alecrim</p>
+                    <h3>R$ 16,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="extras-3" data-produto="16" data-preco="17.90">
+                    <img src="src/img/produtos/produto-16.svg" alt="">
+                    <p>Onion Rings: Anéis de cebola empanados com molho barbecue</p>
+                    <h3>R$ 17,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="extras-4" data-produto="17" data-preco="15.90">
+                    <img src="src/img/produtos/produto-17.svg" alt="">
+                    <p>Nuggets Crocantes: 8 unidades de filézinho de frango empanado</p>
+                    <h3>R$ 15,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+            </div>
+        </div>
+        <div class="categoria" id="bebidas">
+            <h1>BEBIDAS</h1>
+            <div class="conteudo-categoria">
+                <div class="sabor" data-id="bebidas-1" data-produto="18" data-preco="6.50">
+                    <img src="src/img/produtos/produto-18.svg" alt="">
+                    <p>Sprite: Lata 350ml</p>
+                    <h3>R$ 6,50</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="bebidas-2" data-produto="19" data-preco="6.50">
+                    <img src="src/img/produtos/produto-19.svg" alt="">
+                    <p>Coca-Cola Zero: Lata 350ml</p>
+                    <h3>R$ 6,50</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="bebidas-3" data-produto="20" data-preco="9.90">
+                    <img src="src/img/produtos/produto-20.svg" alt="">
+                    <p>Suco de Laranja Natural: Copo 400ml</p>
+                    <h3>R$ 9,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+                <div class="sabor" data-id="bebidas-4" data-produto="21" data-preco="9.90">
+                    <img src="src/img/produtos/produto-21.svg" alt="">
+                    <p>Suco de Limão: Copo 400ml</p>
+                    <h3>R$ 9,90</h3>
+                    <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
+                </div>
+            </div>
+        </div>
+    </main>
     
 </body>
 </html>
