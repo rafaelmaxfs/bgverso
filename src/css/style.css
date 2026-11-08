@@ -435,7 +435,7 @@ main{
   }
 }
 
-/* ===== Tema escuro (alternado pelo botão .btn-destaque via src/tema.js) ===== */
+/* ===== Tema escuro (alternado pelo botão .btn-destaque via src/js/tema.js) ===== */
 /* Inverte preto e branco e troca amarelo e vermelho. As cores das páginas usam estas variáveis. */
 html[data-tema="escuro"] {
   color-scheme: dark;

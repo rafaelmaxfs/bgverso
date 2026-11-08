@@ -1,0 +1,7 @@
+/* ===== Página de Perfil (específico desta página; componentes em style.css) ===== */
+.cartao-dados { justify-content: space-between; }
+.avatar { flex: 0 0 auto; width: 12vw; height: 12vw; border-radius: 50%; background-color: var(--amarelo); }
+.cabecalho-enderecos { display: flex; align-items: center; gap: 1vw; color: var(--branco); }
+.cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; }
+.btn-adicionar { border: none; background: none; font-size: 28px; color: var(--branco); cursor: pointer; }
+.cartao.coluna > input.apelido-endereco { font-size: 48px; margin-bottom: 1.5vh; color: var(--preto); }

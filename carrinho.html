@@ -3,32 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="src/style.css">
-    <script src="src/tema.js"></script>
-    <script src="src/script.js" defer></script>
-    <script src="src/pedido.js" defer></script>
+    <link rel="stylesheet" href="src/css/style.css">
+    <script src="src/js/tema.js"></script>
+    <script src="src/js/script.js" defer></script>
+    <script src="src/js/pedido.js" defer></script>
     <title>Carrinho | BGVerso</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
-    <style>
-        /* ===== Página do Carrinho (específico desta página; componentes em style.css) ===== */
-        .item-carrinho { align-items: center; }
-        .item-carrinho img { width: 16vw; height: auto; aspect-ratio: 1.2; object-fit: cover; border-radius: 1.5vw; }
-        .item-descricao { flex: 1; font-size: 22px; line-height: 1.4; color: var(--preto); }
-        .item-preco { font-size: 56px; color: var(--preto); white-space: nowrap; }
-        .item-quantidade { display: flex; flex-direction: column; align-items: center; font-size: 22px; color: var(--preto); line-height: 1.3; }
-        .item-quantidade button { background: none; border: none; font-size: 26px; cursor: pointer; color: var(--preto); }
-        .frete { display: flex; flex-direction: column; justify-content: center; }
-        .frete .valor-frete { font-size: 64px; color: var(--preto); }
-        .opcoes-pagamento { display: flex; flex-wrap: wrap; gap: 1vw; }
-        .opcoes-pagamento label { display: flex; align-items: center; gap: 8px; font-size: 20px; padding: 1vh 1.5vw; border-radius: 2vw; background-color: var(--amarelo); cursor: pointer; }
-        .resumo { justify-content: space-between; font-size: 22px; }
-        .resumo .total { font-size: 56px; }
-        .endereco-salvo { width: 100%; border: none; border-bottom: 3px solid var(--amarelo); padding: 0.6vh 0.4vw; font-size: 18px; background: transparent; color: var(--preto); outline: none; cursor: pointer; }
-
-            </style>
-    <link rel="stylesheet" href="src/mobile.css">
+    <link rel="stylesheet" href="src/css/carrinho.css">
+    <link rel="stylesheet" href="src/css/mobile.css">
 </head>
 <body>
     <header class="header">
@@ -157,29 +141,7 @@
         </div>
     </main>
 
-    <script>
-        /* Máscara do CEP: 00000-000 (aceita apenas dígitos, máximo de 8) */
-        function mascaraCep(valor) {
-            const digitos = valor.replace(/\D/g, '').slice(0, 8);
-            return digitos.length > 5 ? digitos.slice(0, 5) + '-' + digitos.slice(5) : digitos;
-        }
-
-        /* Campo Número: aceita apenas dígitos */
-        function mascaraNumero(valor) {
-            return valor.replace(/\D/g, '');
-        }
-
-        const inputCep = document.getElementById('cep');
-        const inputNumero = document.getElementById('numero');
-
-        inputCep.addEventListener('input', () => {
-            inputCep.value = mascaraCep(inputCep.value);
-        });
-
-        inputNumero.addEventListener('input', () => {
-            inputNumero.value = mascaraNumero(inputNumero.value);
-        });
-    </script>
+    <script src="src/js/carrinho-mascaras.js"></script>
 </body>
 </html>
 
