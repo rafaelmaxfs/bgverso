@@ -183,3 +183,98 @@ function configurarEnderecos() {
 
 renderizarEnderecos();
 configurarEnderecos();
+
+/* ===== Foto de perfil (avatar): escolhida pelo utilizador, guardada no localStorage ===== */
+const CHAVE_AVATAR = 'bgverso_avatar';
+const TAMANHO_AVATAR = 256; /* px: lado do quadrado final (mantém o armazenamento pequeno) */
+
+function lerAvatarSalvo() {
+    try {
+        return localStorage.getItem(CHAVE_AVATAR);
+    } catch (erro) {
+        return null;
+    }
+}
+
+/* Mostra a foto guardada, ou o marcador "+" quando não há foto */
+function mostrarAvatar(dataUrl) {
+    const imagem = document.getElementById('avatar-imagem');
+    const marcador = document.getElementById('avatar-placeholder');
+    const botao = document.getElementById('btn-avatar');
+    const remover = document.getElementById('btn-remover-avatar');
+    if (!imagem || !marcador || !botao || !remover) return;
+
+    imagem.hidden = !dataUrl;
+    marcador.hidden = !!dataUrl;
+    remover.hidden = !dataUrl;
+    if (dataUrl) {
+        imagem.src = dataUrl;
+        botao.setAttribute('aria-label', 'Trocar foto de perfil');
+    } else {
+        imagem.removeAttribute('src');
+        botao.setAttribute('aria-label', 'Adicionar foto de perfil');
+    }
+}
+
+/* Recorta a imagem no centro, em quadrado, e reduz para TAMANHO_AVATAR (JPEG) */
+function redimensionarAvatar(arquivo) {
+    return new Promise((resolver, rejeitar) => {
+        const leitor = new FileReader();
+        leitor.onerror = () => rejeitar(new Error('Não foi possível ler o arquivo.'));
+        leitor.onload = () => {
+            const imagem = new Image();
+            imagem.onerror = () => rejeitar(new Error('O arquivo selecionado não é uma imagem válida.'));
+            imagem.onload = () => {
+                const lado = Math.min(imagem.naturalWidth, imagem.naturalHeight);
+                const x = (imagem.naturalWidth - lado) / 2;
+                const y = (imagem.naturalHeight - lado) / 2;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = TAMANHO_AVATAR;
+                canvas.height = TAMANHO_AVATAR;
+                canvas.getContext('2d').drawImage(imagem, x, y, lado, lado, 0, 0, TAMANHO_AVATAR, TAMANHO_AVATAR);
+                resolver(canvas.toDataURL('image/jpeg', 0.85));
+            };
+            imagem.src = leitor.result;
+        };
+        leitor.readAsDataURL(arquivo);
+    });
+}
+
+function configurarAvatar() {
+    const botao = document.getElementById('btn-avatar');
+    const input = document.getElementById('avatar-input');
+    const remover = document.getElementById('btn-remover-avatar');
+    if (!botao || !input || !remover) return;
+
+    mostrarAvatar(lerAvatarSalvo());
+
+    botao.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', async () => {
+        const arquivo = input.files && input.files[0];
+        input.value = '';
+        if (!arquivo) return;
+
+        if (!arquivo.type.startsWith('image/')) {
+            alert('Escolha um arquivo de imagem (PNG, JPG, WEBP, etc.).');
+            return;
+        }
+
+        try {
+            const dataUrl = await redimensionarAvatar(arquivo);
+            localStorage.setItem(CHAVE_AVATAR, dataUrl);
+            mostrarAvatar(dataUrl);
+        } catch (erro) {
+            alert(erro.message);
+        }
+    });
+
+    remover.addEventListener('click', () => {
+        localStorage.removeItem(CHAVE_AVATAR);
+        mostrarAvatar(null);
+    });
+}
+
+configurarAvatar();
+

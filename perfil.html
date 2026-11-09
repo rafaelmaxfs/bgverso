@@ -87,7 +87,14 @@
                             <input type="tel" id="whatsapp" name="whatsapp" inputmode="tel" autocomplete="tel" maxlength="15" placeholder="(00) 00000-0000">
                         </div>
                     </div>
-                    <div class="avatar" aria-hidden="true"></div>
+                    <div class="avatar-bloco">
+                        <button class="avatar" id="btn-avatar" type="button" aria-label="Adicionar foto de perfil">
+                            <img id="avatar-imagem" alt="Foto de perfil" hidden>
+                            <span class="avatar-placeholder" id="avatar-placeholder" aria-hidden="true">+</span>
+                        </button>
+                        <input type="file" id="avatar-input" accept="image/*" hidden>
+                        <button class="btn secundario" id="btn-remover-avatar" type="button" hidden>Remover foto</button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -643,7 +643,9 @@
 
   /* ----- 8. Perfil ----- */
   .avatar {
-    display: none;
+    width: 96px;
+    height: 96px;
+    font-size: 40px;
   }
 
   .cartao-dados {
