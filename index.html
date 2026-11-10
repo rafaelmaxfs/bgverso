@@ -15,14 +15,14 @@
 <body>
     <header class="header">
         <a class="logo" href="index.html">
-            <img src="src/img/logo.png" alt="">
+            <img src="src/img/logo.webp" alt="">
         </a>
 
         <nav class="menu">
             <ul class="menu-links">
                 <li><a href="index.html">Produtos</a></li>
                 <li><a href="pedidos.html">Pedidos</a></li>
-                <li><a href="carrinho.html">Carrinho</a></li>
+                <li><a href="carrinho.html">Carrinho<span class="contador-carrinho" hidden>0</span></a></li>
                 <li><a href="perfil.html">Perfil</a></li>
             </ul>
 
@@ -207,6 +207,9 @@
                     <h4><button class="btn-qtd" type="button" data-acao="mais" aria-label="Aumentar quantidade">+</button><br><span class="qtd" data-qtd="0">(0)</span><br><button class="btn-qtd" type="button" data-acao="menos" aria-label="Diminuir quantidade">-</button></h4>
                 </div>
             </div>
+        </div>
+        <div class="acao-carrinho">
+            <a class="btn botao-ir-carrinho" href="carrinho.html" hidden>Ver carrinho</a>
         </div>
     </main>
     

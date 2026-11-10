@@ -9,6 +9,8 @@
 .frete .valor-frete { font-size: 64px; color: var(--preto); }
 .opcoes-pagamento { display: flex; flex-wrap: wrap; gap: 1vw; }
 .opcoes-pagamento label { display: flex; align-items: center; gap: 8px; font-size: 20px; padding: 1vh 1.5vw; border-radius: 2vw; background-color: var(--amarelo); cursor: pointer; }
+.opcoes-pagamento label:has(input:checked) { background-color: var(--vermelho); color: #FFFFFF; }
+
 .resumo { justify-content: space-between; font-size: 22px; }
 .resumo .total { font-size: 56px; }
 .endereco-salvo { width: 100%; border: none; border-bottom: 3px solid var(--amarelo); padding: 0.6vh 0.4vw; font-size: 18px; background: transparent; color: var(--preto); outline: none; cursor: pointer; }

@@ -5,7 +5,7 @@
 .avatar:hover { filter: brightness(0.95); }
 .avatar:focus-visible { outline: 3px solid var(--preto); outline-offset: 3px; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-.cabecalho-enderecos { display: flex; align-items: center; gap: 1vw; color: var(--branco); }
-.cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; }
-.btn-adicionar { border: none; background: none; font-size: 28px; color: var(--branco); cursor: pointer; }
+.cabecalho-enderecos { display: flex; align-items: center; gap: 1vw; color: #FFFFFF; }
+.cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; color: #FFFFFF; }
+.btn-adicionar { border: none; background: none; font-size: 28px; color: #FFFFFF; cursor: pointer; }
 .cartao.coluna > input.apelido-endereco { font-size: 48px; margin-bottom: 1.5vh; color: var(--preto); }

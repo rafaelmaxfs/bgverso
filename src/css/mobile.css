@@ -142,6 +142,27 @@
     opacity: 0.7;
   }
 
+  /* Bolinha do carrinho na barra inferior: os links são colunas centradas, por isso a bolinha
+     fica no canto superior direito da palavra, atrás dela, em vez de ficar à direita do link */
+  .menu-links .contador-carrinho {
+    top: 0;
+    left: calc(50% + 14px);
+    transform: none;
+    font-size: 9px;
+  }
+
+  /* Botão do carrinho: fixo no canto inferior direito, acima da barra inferior de abas */
+  .acao-carrinho {
+    position: fixed;
+    top: auto;
+    bottom: calc(var(--altura-barra) + 24px);
+    left: auto;
+    right: 12px;
+    margin: 0;
+    align-self: auto;
+    z-index: 35;
+  }
+
   .menu-links a:focus-visible,
   .btn-destaque:focus-visible,
   .btn-qtd:focus-visible,

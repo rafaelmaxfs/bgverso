@@ -72,10 +72,10 @@ nav{
 
 main{
     position: relative;
-    top: 15vh;
+    top: max(15vh, 120px);
     left: 17vw;
     width: 80vw;
-    height: 85vh;
+    height: calc(100vh - max(15vh, 120px));
     display: flex;
     flex-direction: column;
     background-color: var(--vermelho);
@@ -94,6 +94,11 @@ main{
         font-size: 28px;
     }
 }
+/* Títulos das secções em maiúsculas, como os das categorias da página de produtos */
+main .categoria > h1 {
+    text-transform: uppercase;
+}
+
 /* Bloco reutilizável de cada categoria (ex.: Clássicos, Gourmet, Extras...) */
 .categoria{
     display: flex;
@@ -142,18 +147,14 @@ main{
   background: none;
   border: none;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 26px;
+  font-weight: 700;
   line-height: 1;
   color: inherit;
   cursor: pointer;
   padding: 0 4px;
-}
-
-.btn-qtd {
   min-width: 36px;
   min-height: 36px;
-  font-size: 26px;
-  font-weight: 700;
 }
 
 .btn-qtd:focus-visible {
@@ -226,6 +227,8 @@ main{
   scrollbar-width: none;
 }
 .menu-links a {
+  position: relative;
+  isolation: isolate;
   display: block;
   color: var(--preto);
   text-decoration: none;
@@ -244,6 +247,52 @@ main{
 
 .menu-links a:hover {
   opacity: 0.65;
+}
+
+/* Bolinha com o total de itens do carrinho: fica à frente da palavra "Carrinho" */
+.contador-carrinho {
+  position: absolute;
+  z-index: 1;
+  top: calc(15% - 6px);
+  left: 100%;
+  transform: translate(-45%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2em;
+  height: 2em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #000000;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.contador-carrinho[hidden] {
+  display: none;
+}
+
+/* Botão que leva ao carrinho: fixo na parte inferior esquerda da área de conteúdo, só com itens no carrinho */
+.acao-carrinho {
+  position: sticky;
+  bottom: 3vh;
+  left: 0;
+  align-self: flex-end;
+  margin-right: 2vw;
+  z-index: 5;
+}
+
+.botao-ir-carrinho {
+  display: inline-block;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 30%);
+}
+
+.botao-ir-carrinho[hidden] {
+  display: none;
 }
 
 /* No desktop a navegação já está visível no cabeçalho; o hambúrguer só existe no telemóvel */
@@ -363,7 +412,7 @@ main{
 
 .btn.secundario {
   background-color: var(--vermelho);
-  color: var(--branco);
+  color: #FFFFFF;
 }
 
 .btn:hover {
