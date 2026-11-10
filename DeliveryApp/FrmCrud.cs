@@ -1,4 +1,4 @@
-using Npgsql;
+using MySqlConnector;
 
 namespace DeliveryApp;
 
@@ -83,8 +83,8 @@ public class FrmCrud : Form
         _grid.ClearSelection();
     }
 
-    private NpgsqlParameter[] Parametros() => _campos
-        .Select(c => new NpgsqlParameter("@" + c.Coluna, _txt[c.Coluna].Text.Trim())).ToArray();
+    private MySqlParameter[] Parametros() => _campos
+        .Select(c => new MySqlParameter("@" + c.Coluna, _txt[c.Coluna].Text.Trim())).ToArray();
 
     private bool Valido()
     {
@@ -118,7 +118,7 @@ public class FrmCrud : Form
         try
         {
             string set = string.Join(",", _campos.Select(c => $"{c.Coluna}=@{c.Coluna}"));
-            var ps = Parametros().Append(new NpgsqlParameter("@id", id)).ToArray();
+            var ps = Parametros().Append(new MySqlParameter("@id", id)).ToArray();
             Conexao.Executar($"UPDATE {_tabela} SET {set} WHERE {_idColuna}=@id", ps);
             Carregar();
         }
@@ -132,10 +132,10 @@ public class FrmCrud : Form
         if (MessageBox.Show("Excluir este registro?", "Confirmar", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
         try
         {
-            Conexao.Executar($"DELETE FROM {_tabela} WHERE {_idColuna}=@id", new NpgsqlParameter("@id", id));
+            Conexao.Executar($"DELETE FROM {_tabela} WHERE {_idColuna}=@id", new MySqlParameter("@id", id));
             Carregar(); Limpar();
         }
-        catch (PostgresException)
+        catch (MySqlException)
         {
             MessageBox.Show("Não foi possível excluir: este registro está sendo usado em outras tabelas (ex.: pedidos ou produtos).");
         }
