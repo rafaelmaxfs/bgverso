@@ -119,6 +119,20 @@ function lerCarrinho() {
 
 function salvarCarrinho(carrinho) {
     localStorage.setItem(CHAVE_CARRINHO, JSON.stringify(carrinho));
+    atualizarContadorCarrinho();
+}
+
+/* Bolinha ao lado de "Carrinho" no menu: total de unidades guardadas (oculta quando vazio) */
+function atualizarContadorCarrinho() {
+    const total = Object.values(lerCarrinho()).reduce((soma, item) => soma + item.qtd, 0);
+    document.querySelectorAll('.contador-carrinho').forEach((contador) => {
+        contador.textContent = total;
+        contador.hidden = total === 0;
+    });
+    /* Botão "Ver carrinho" (index.html): só aparece com itens no carrinho */
+    document.querySelectorAll('.botao-ir-carrinho').forEach((botao) => {
+        botao.hidden = total === 0;
+    });
 }
 
 /* ===== Pedidos finalizados (guardados ao finalizar em carrinho.html, exibidos em pedidos.html) ===== */
@@ -787,3 +801,9 @@ configurarFormularioCartao();
 renderizarPedidosRealizados();
 renderizarPedirNovamente();
 atualizarPesquisa();
+atualizarContadorCarrinho();
+
+/* Mantém a bolinha certa quando o carrinho é alterado noutro separador */
+window.addEventListener('storage', (evento) => {
+    if (evento.key === CHAVE_CARRINHO) atualizarContadorCarrinho();
+});

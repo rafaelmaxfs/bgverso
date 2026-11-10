@@ -1,7 +1,11 @@
 /* ===== Página de Perfil (específico desta página; componentes em style.css) ===== */
 .cartao-dados { justify-content: space-between; }
-.avatar { flex: 0 0 auto; width: 12vw; height: 12vw; border-radius: 50%; background-color: var(--amarelo); }
-.cabecalho-enderecos { display: flex; align-items: center; gap: 1vw; color: var(--branco); }
-.cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; }
-.btn-adicionar { border: none; background: none; font-size: 28px; color: var(--branco); cursor: pointer; }
+.avatar-bloco { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+.avatar { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 12vw; height: 12vw; padding: 0; border: none; border-radius: 50%; overflow: hidden; background-color: var(--amarelo); color: var(--preto); font-size: 4vw; cursor: pointer; }
+.avatar:hover { filter: brightness(0.95); }
+.avatar:focus-visible { outline: 3px solid var(--preto); outline-offset: 3px; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cabecalho-enderecos { display: flex; align-items: center; gap: 1vw; color: #FFFFFF; }
+.cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; color: #FFFFFF; }
+.btn-adicionar { border: none; background: none; font-size: 28px; color: #FFFFFF; cursor: pointer; }
 .cartao.coluna > input.apelido-endereco { font-size: 48px; margin-bottom: 1.5vh; color: var(--preto); }

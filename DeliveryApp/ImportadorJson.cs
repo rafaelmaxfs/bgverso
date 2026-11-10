@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Npgsql;
+using MySqlConnector;
 
 namespace DeliveryApp;
 
@@ -93,7 +93,7 @@ public static class ImportadorJson
         return res;
     }
 
-    private static bool ImportarUm(NpgsqlConnection c, NpgsqlTransaction t, PedidoJson p)
+    private static bool ImportarUm(MySqlConnection c, MySqlTransaction t, PedidoJson p)
     {
         if (p.Itens.Count == 0) throw new Exception("pedido sem itens.");
         if (!Formas.Contains(p.FormaPagamento)) throw new Exception($"forma de pagamento inválida ({p.FormaPagamento}).");
@@ -106,8 +106,7 @@ public static class ImportadorJson
         {
             idUsuario = InserirComId(c, t,
                 "INSERT INTO usuarios (nome,sobrenome,email,senha_hash,cpf,telefone,criado_em) " +
-                "VALUES (@n,@s,@e,md5(random()::text || clock_timestamp()::text),@cpf,@tel,now())",
-                "id_usuario",
+                "VALUES (@n,@s,@e,SHA2(UUID(),256),@cpf,@tel,NOW())",
                 ("@n", p.Usuario.Nome), ("@s", p.Usuario.Sobrenome), ("@e", p.Usuario.Email),
                 ("@cpf", p.Usuario.Cpf), ("@tel", p.Usuario.Telefone));
         }
@@ -128,7 +127,6 @@ public static class ImportadorJson
             idEndereco = InserirComId(c, t,
                 "INSERT INTO enderecos (id_usuario,apelido,cep,rua,numero,complemento,bairro,cidade,uf,referencia,frete) " +
                 "VALUES (@u,@a,@cep,@r,@n,@comp,@b,@cid,@uf,@ref,@f)",
-                "id_endereco",
                 ("@u", idUsuario), ("@a", e.Apelido), ("@cep", e.Cep), ("@r", e.Rua), ("@n", e.Numero),
                 ("@comp", e.Complemento), ("@b", e.Bairro), ("@cid", e.Cidade), ("@uf", e.Uf),
                 ("@ref", e.Referencia), ("@f", e.Frete));
@@ -146,7 +144,6 @@ public static class ImportadorJson
             {
                 idCartao = InserirComId(c, t,
                     "INSERT INTO cartoes (id_usuario,bandeira,ultimos4,nome_titular,validade) VALUES (@u,@b,@l,@n,@v)",
-                    "id_cartao",
                     ("@u", idUsuario), ("@b", k.Bandeira), ("@l", k.Ultimos4), ("@n", k.NomeTitular), ("@v", k.Validade));
             }
         }
@@ -168,7 +165,6 @@ public static class ImportadorJson
         int idPedido = InserirComId(c, t,
             "INSERT INTO pedidos (id_usuario,id_endereco,id_cartao,forma_pagamento,status,subtotal,frete,total,criado_em) " +
             "VALUES (@u,@e,@c,@fp,'confirmado',@s,@f,@t,@d)",
-            "id_pedido",
             ("@u", idUsuario), ("@e", idEndereco), ("@c", idCartao), ("@fp", p.FormaPagamento),
             ("@s", subtotal), ("@f", e.Frete), ("@t", total), ("@d", p.CriadoEm));
 
@@ -179,16 +175,19 @@ public static class ImportadorJson
     }
 
 
-    // PostgreSQL não tem LastInsertedId: usa-se RETURNING para obter o id gerado.
-    private static int InserirComId(NpgsqlConnection c, NpgsqlTransaction t, string sql, string colunaId,
+    // Executa o INSERT e devolve o id gerado pelo AUTO_INCREMENT (LastInsertedId do MySQL).
+    private static int InserirComId(MySqlConnection c, MySqlTransaction t, string sql,
                                     params (string Nome, object? Valor)[] ps)
     {
-        return Convert.ToInt32(Cmd(c, t, sql + " RETURNING " + colunaId, ps).ExecuteScalar());
+        var cmd = Cmd(c, t, sql, ps);
+        cmd.ExecuteNonQuery();
+        return (int)cmd.LastInsertedId;
     }
 
-    private static NpgsqlCommand Cmd(NpgsqlConnection c, NpgsqlTransaction t, string sql, params (string Nome, object? Valor)[] ps)
+    private static MySqlCommand Cmd(MySqlConnection c, MySqlTransaction t, string sql, params (string Nome, object? Valor)[] ps)
     {
-        var cmd = new NpgsqlCommand(sql, c, t);
+        var cmd = new MySqlCommand(sql, c, t);
         foreach (var (n, v) in ps) cmd.Parameters.AddWithValue(n, v ?? DBNull.Value);
         return cmd;
     }
+}
