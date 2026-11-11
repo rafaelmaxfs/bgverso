@@ -161,14 +161,66 @@
         <div class="categoria compacta" id="login">
             <h1>Login/Logout</h1>
             <div class="conteudo-categoria">
-                <div class="cartao coluna">
-                    <button class="btn" type="button">Sair da conta</button>
+                <div class="cartao coluna" id="painel-conta-logada" hidden>
+                    <p>Você está conectado como <strong id="conta-nome"></strong>.</p>
+                    <button class="btn" id="btn-sair" type="button">Sair da conta</button>
                 </div>
+
+                <form class="cartao coluna" id="form-entrar" novalidate>
+                    <h3>Entrar</h3>
+                    <div class="campo-form">
+                        <label for="entrar-email">E-mail:</label>
+                        <input type="email" id="entrar-email" name="entrar-email" autocomplete="email" maxlength="100" required>
+                    </div>
+                    <div class="campo-form">
+                        <label for="entrar-senha">Senha:</label>
+                        <input type="password" id="entrar-senha" name="entrar-senha" autocomplete="current-password" required>
+                    </div>
+                    <div class="acoes-form">
+                        <button class="btn" type="submit">Entrar</button>
+                    </div>
+                    <p class="erro" id="erro-entrar" role="alert"></p>
+                </form>
+
+                <form class="cartao coluna" id="form-cadastro" novalidate>
+                    <h3>Criar conta</h3>
+                    <div class="grade-campos">
+                        <div class="campo-form">
+                            <label for="cadastro-nome">Nome:</label>
+                            <input type="text" id="cadastro-nome" name="cadastro-nome" maxlength="50" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="cadastro-sobrenome">Sobrenome:</label>
+                            <input type="text" id="cadastro-sobrenome" name="cadastro-sobrenome" maxlength="80" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="cadastro-email">E-mail:</label>
+                            <input type="email" id="cadastro-email" name="cadastro-email" autocomplete="email" maxlength="100" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="cadastro-cpf">CPF:</label>
+                            <input type="text" id="cadastro-cpf" name="cadastro-cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="cadastro-telefone">Telefone:</label>
+                            <input type="tel" id="cadastro-telefone" name="cadastro-telefone" inputmode="tel" autocomplete="tel" maxlength="15" placeholder="(00) 00000-0000" required>
+                        </div>
+                        <div class="campo-form">
+                            <label for="cadastro-senha">Senha (mín. 6 caracteres):</label>
+                            <input type="password" id="cadastro-senha" name="cadastro-senha" autocomplete="new-password" minlength="6" required>
+                        </div>
+                    </div>
+                    <div class="acoes-form">
+                        <button class="btn" type="submit">Criar conta</button>
+                    </div>
+                    <p class="erro" id="erro-cadastro" role="alert"></p>
+                </form>
             </div>
         </div>
     </main>
 
     <script src="src/js/perfil-mascaras.js"></script>
+    <script src="src/js/conta.js" defer></script>
 </body>
 </html>
 

@@ -66,7 +66,7 @@ public class ServidorPedidos : IDisposable
                 Enviar(resp, 204, null);
                 return;
             }
-            if (req.HttpMethod != "POST" || req.Url?.AbsolutePath != "/pedidos")
+            if (req.HttpMethod != "POST")
             {
                 Enviar(resp, 404, new { erro = "Rota não encontrada." });
                 return;
@@ -75,6 +75,21 @@ public class ServidorPedidos : IDisposable
             string corpo;
             using (var leitor = new StreamReader(req.InputStream, Encoding.UTF8))
                 corpo = leitor.ReadToEnd();
+
+            // Cadastro e login de clientes (ver Contas.cs)
+            var rota = req.Url?.AbsolutePath;
+            if (rota == "/cadastro" || rota == "/login")
+            {
+                var conta = rota == "/cadastro" ? Contas.Cadastrar(corpo) : Contas.Entrar(corpo);
+                _log($"{(rota == "/cadastro" ? "Cadastro" : "Login")}: HTTP {conta.Status}");
+                Enviar(resp, conta.Status, conta.Corpo);
+                return;
+            }
+            if (rota != "/pedidos")
+            {
+                Enviar(resp, 404, new { erro = "Rota não encontrada." });
+                return;
+            }
 
             ResultadoImportacao resultado;
             lock (_trava)
