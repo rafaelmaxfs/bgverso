@@ -67,9 +67,12 @@ public static class ImportadorJson
     private static readonly string[] Formas = { "pix", "cartao", "dinheiro" };
 
     // Lê o JSON do site e grava cada pedido numa transação própria (um pedido com erro não derruba os outros).
-    public static ResultadoImportacao Importar(string caminho)
+    public static ResultadoImportacao Importar(string caminho) => ImportarTexto(File.ReadAllText(caminho));
+
+    // Importa a partir do texto JSON (ex.: corpo da requisição enviada pelo site).
+    public static ResultadoImportacao ImportarTexto(string json)
     {
-        var arq = JsonSerializer.Deserialize<ArquivoPedidos>(File.ReadAllText(caminho))
+        var arq = JsonSerializer.Deserialize<ArquivoPedidos>(json)
                   ?? throw new Exception("JSON vazio ou inválido.");
         var res = new ResultadoImportacao();
 

@@ -175,34 +175,50 @@ function salvarPedidoRealizado(registro) {
     salvarPedidosRealizados(pedidos);
 }
 
-function baixarJson(objeto, nomeArquivo) {
-    const blob = new Blob([JSON.stringify(objeto, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = nomeArquivo;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+/* Endereço do servidor C# (DeliveryApp/ServidorPedidos.cs) que grava o pedido no MySQL */
+const URL_SERVIDOR_PEDIDOS = 'http://localhost:5050/pedidos';
+
+/* Envia o pedido ao C#. Lança erro se o servidor não estiver ligado ou se a gravação falhar */
+async function enviarPedido(pedido) {
+    let resposta;
+    try {
+        resposta = await fetch(URL_SERVIDOR_PEDIDOS, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pedidos: [pedido] })
+        });
+    } catch (erro) {
+        throw new Error('Não foi possível conectar ao sistema de pedidos. Verifique se o programa DeliveryApp está aberto.');
+    }
+
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) {
+        throw new Error('Pedido não foi gravado: ' + (dados.erro || (dados.erros || []).join('; ') || resposta.status));
+    }
+    return dados;
 }
 
-document.getElementById('finalizar-pedido')?.addEventListener('click', () => {
+document.getElementById('finalizar-pedido')?.addEventListener('click', async () => {
+    const botao = document.getElementById('finalizar-pedido');
     try {
         const agora = new Date();
         const pedido = montarPedido(agora);
         const itensCarrinho = Object.values(lerCarrinho());
-        /* Um arquivo por pedido, com nome único. O importador ignora pedidos já importados */
-        baixarJson({ pedidos: [pedido] }, 'pedidos-' + agora.getTime() + '.json');
+
+        botao.disabled = true;
+        const resultado = await enviarPedido(pedido);
         salvarPedidoRealizado(montarRegistroPedido(pedido, agora, itensCarrinho));
 
         salvarCarrinho({});
         renderizarCarrinho();
         atualizarResumo();
         atualizarPesquisa();
-        alert('Pedido finalizado! O arquivo JSON foi baixado.');
+        alert(resultado.importados > 0 ? 'Pedido finalizado e gravado no banco!' : 'Este pedido já estava gravado.');
     } catch (erro) {
         alert(erro.message);
+    } finally {
+        botao.disabled = false;
     }
 });
 
