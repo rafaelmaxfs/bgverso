@@ -58,26 +58,44 @@ public class ServidorPedidos : IDisposable
         {
             // Permite que o site (aberto em outra origem, ex.: Live Server ou arquivo local) chame este servidor
             resp.Headers["Access-Control-Allow-Origin"] = "*";
-            resp.Headers["Access-Control-Allow-Methods"] = "POST, OPTIONS";
-            resp.Headers["Access-Control-Allow-Headers"] = "Content-Type";
+            resp.Headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+            resp.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
 
             if (req.HttpMethod == "OPTIONS")
             {
                 Enviar(resp, 204, null);
                 return;
             }
+
+            var rota = req.Url?.AbsolutePath;
+
+            // Lê o corpo de qualquer requisição antes de responder (evita erro 411 ao responder POST sem corpo)
+            string corpo;
+            using (var leitor = new StreamReader(req.InputStream, Encoding.UTF8))
+                corpo = leitor.ReadToEnd();
+
+            // Sessão do cliente (ver Contas.cs): token enviado no cabeçalho Authorization
+            if (rota == "/sessao" && req.HttpMethod == "GET")
+            {
+                var sessao = Contas.ConferirSessao(TokenDoCabecalho(req));
+                Enviar(resp, sessao.Status, sessao.Corpo);
+                return;
+            }
+            if (rota == "/logout" && req.HttpMethod == "POST")
+            {
+                Contas.Sair(TokenDoCabecalho(req));
+                _log("Logout realizado.");
+                Enviar(resp, 200, new { ok = true });
+                return;
+            }
+
             if (req.HttpMethod != "POST")
             {
                 Enviar(resp, 404, new { erro = "Rota não encontrada." });
                 return;
             }
 
-            string corpo;
-            using (var leitor = new StreamReader(req.InputStream, Encoding.UTF8))
-                corpo = leitor.ReadToEnd();
-
             // Cadastro e login de clientes (ver Contas.cs)
-            var rota = req.Url?.AbsolutePath;
             if (rota == "/cadastro" || rota == "/login")
             {
                 var conta = rota == "/cadastro" ? Contas.Cadastrar(corpo) : Contas.Entrar(corpo);
@@ -115,16 +133,32 @@ public class ServidorPedidos : IDisposable
         }
     }
 
+    // Lê "Authorization: Bearer <token>"; devolve null se ausente
+    private static string? TokenDoCabecalho(HttpListenerRequest req)
+    {
+        var valor = req.Headers["Authorization"];
+        if (string.IsNullOrEmpty(valor) || !valor.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) return null;
+        return valor["Bearer ".Length..].Trim();
+    }
+
     private static void Enviar(HttpListenerResponse resp, int status, object? corpo)
     {
-        resp.StatusCode = status;
-        if (corpo != null)
+        // Só escreve uma vez: se a resposta já foi enviada/fechada, não tenta de novo
+        if (!resp.OutputStream.CanWrite) return;
+        try
         {
-            var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(corpo));
-            resp.ContentType = "application/json; charset=utf-8";
-            resp.ContentLength64 = bytes.Length;
-            resp.OutputStream.Write(bytes, 0, bytes.Length);
+            resp.StatusCode = status;
+            if (corpo != null)
+            {
+                var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(corpo));
+                resp.ContentType = "application/json; charset=utf-8";
+                resp.ContentLength64 = bytes.Length;
+                resp.OutputStream.Write(bytes, 0, bytes.Length);
+            }
         }
-        resp.OutputStream.Close();
+        finally
+        {
+            try { resp.OutputStream.Close(); } catch (Exception) { }
+        }
     }
 }

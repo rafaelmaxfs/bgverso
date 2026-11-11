@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using MySqlConnector;
@@ -10,12 +11,24 @@ public class ResultadoConta
     public object Corpo { get; init; } = new { };
 }
 
-// Cadastro e login de clientes (tabela usuarios). A senha nunca é guardada em texto:
-// usa PBKDF2 com sal aleatório, no formato "pbkdf2$iteracoes$sal$hash" na coluna senha_hash.
+// Cadastro, login e sessão de clientes (tabela usuarios).
+// - Senha: PBKDF2 com sal, formato "pbkdf2$iteracoes$sal$hash" em senha_hash (nunca texto puro).
+// - Sessão: token aleatório devolvido ao navegador; o servidor guarda só o SHA-256 do token, em memória, com validade.
+// - Proteção: após 5 tentativas erradas para um e-mail, bloqueia novas tentativas por 15 minutos.
 public static class Contas
 {
     private const int Iteracoes = 210_000;
     private const int TamanhoHash = 32;
+    private static readonly TimeSpan ValidadeSessao = TimeSpan.FromHours(8);
+    private const int MaxTentativas = 5;
+    private static readonly TimeSpan Bloqueio = TimeSpan.FromMinutes(15);
+
+    // token (SHA-256 em hex) -> dados da sessão
+    private static readonly ConcurrentDictionary<string, Sessao> _sessoes = new();
+    // e-mail -> tentativas falhadas e instante do bloqueio
+    private static readonly ConcurrentDictionary<string, (int Falhas, DateTime? Ate)> _tentativas = new();
+
+    private sealed record Sessao(string Email, string Nome, string Sobrenome, string Cpf, string Telefone, DateTime Expira);
 
     public static ResultadoConta Cadastrar(string json)
     {
@@ -46,11 +59,21 @@ public static class Contas
             ins.ExecuteNonQuery();
         }
 
+        // Já deixa o cliente conectado após criar a conta
+        var token = NovaSessao(email, nome, sobrenome, cpf, telefone);
         return new ResultadoConta
         {
             Status = 201,
-            Corpo = new { usuario = new { nome, sobrenome, email, cpf, telefone } }
+            Corpo = new { token, usuario = new { nome, sobrenome, email, cpf, telefone } }
         };
+    }
+
+    private static string NovaSessao(string email, string nome, string sobrenome, string cpf, string telefone)
+    {
+        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        _sessoes[HashToken(token)] = new Sessao(email, nome, sobrenome, cpf, telefone, DateTime.UtcNow.Add(ValidadeSessao));
+        LimparSessoesExpiradas();
+        return token;
     }
 
     public static ResultadoConta Entrar(string json)
@@ -60,33 +83,105 @@ public static class Contas
             return Erro(422, "Informe e-mail e senha.");
 
         var email = d.Email.Trim().ToLowerInvariant();
+        if (EstaBloqueado(email, out var restante))
+            return Erro(429, $"Muitas tentativas. Tente novamente em {Math.Ceiling(restante.TotalMinutes)} minuto(s).");
+
         using var c = Conexao.Abrir();
         using var cmd = Cmd(c,
             "SELECT nome,sobrenome,email,cpf,telefone,senha_hash FROM usuarios WHERE email=@e LIMIT 1",
             ("@e", email));
         using var r = cmd.ExecuteReader();
 
-        // Mesma mensagem para e-mail inexistente e senha errada (não revela qual dos dois)
+        // Mesma mensagem e mesmo tempo para e-mail inexistente e senha errada (não revela qual dos dois)
         const string falha = "E-mail ou senha inválidos.";
-        if (!r.Read()) return Erro(401, falha);
-        if (!VerificarHash(d.Senha, r.GetString("senha_hash"))) return Erro(401, falha);
+        string hash = r.Read() ? r.GetString("senha_hash") : HashFalso;
+        bool existe = hash != HashFalso;
+        bool senhaOk = VerificarHash(d.Senha, hash) && existe;
+
+        if (!senhaOk)
+        {
+            RegistrarFalha(email);
+            return Erro(401, falha);
+        }
+        _tentativas.TryRemove(email, out _);
+
+        var nome = r.GetString("nome");
+        var sobrenome = r.GetString("sobrenome");
+        var cpf = r.GetString("cpf");
+        var telefone = r.GetString("telefone");
+        var token = NovaSessao(email, nome, sobrenome, cpf, telefone);
 
         return new ResultadoConta
         {
             Status = 200,
-            Corpo = new
-            {
-                usuario = new
-                {
-                    nome = r.GetString("nome"),
-                    sobrenome = r.GetString("sobrenome"),
-                    email = r.GetString("email"),
-                    cpf = r.GetString("cpf"),
-                    telefone = r.GetString("telefone")
-                }
-            }
+            Corpo = new { token, usuario = new { nome, sobrenome, email, cpf, telefone } }
         };
     }
+
+    // Confere o token enviado pelo navegador e devolve os dados do cliente (ou erro 401)
+    public static ResultadoConta ConferirSessao(string? token)
+    {
+        if (string.IsNullOrEmpty(token)) return Erro(401, "Sessão inexistente.");
+        if (!_sessoes.TryGetValue(HashToken(token), out var sessao) || sessao.Expira < DateTime.UtcNow)
+        {
+            _sessoes.TryRemove(HashToken(token), out _);
+            return Erro(401, "Sessão expirada. Entre novamente.");
+        }
+        return new ResultadoConta { Status = 200, Corpo = new { usuario = DadosUsuario(sessao) } };
+    }
+
+    public static void Sair(string? token)
+    {
+        if (!string.IsNullOrEmpty(token)) _sessoes.TryRemove(HashToken(token), out _);
+    }
+
+    private static object DadosUsuario(Sessao s) => new
+    {
+        nome = s.Nome,
+        sobrenome = s.Sobrenome,
+        email = s.Email,
+        cpf = s.Cpf,
+        telefone = s.Telefone
+    };
+
+    // ---------- proteção contra tentativas ----------
+
+    private static bool EstaBloqueado(string email, out TimeSpan restante)
+    {
+        restante = TimeSpan.Zero;
+        if (!_tentativas.TryGetValue(email, out var t) || t.Ate == null) return false;
+        if (t.Ate > DateTime.UtcNow)
+        {
+            restante = t.Ate.Value - DateTime.UtcNow;
+            return true;
+        }
+        _tentativas.TryRemove(email, out _);
+        return false;
+    }
+
+    private static void RegistrarFalha(string email)
+    {
+        _tentativas.AddOrUpdate(email,
+            _ => (1, null),
+            (_, atual) =>
+            {
+                int falhas = atual.Falhas + 1;
+                return falhas >= MaxTentativas ? (0, DateTime.UtcNow.Add(Bloqueio)) : (falhas, null);
+            });
+    }
+
+    private static void LimparSessoesExpiradas()
+    {
+        var agora = DateTime.UtcNow;
+        foreach (var (chave, s) in _sessoes)
+            if (s.Expira < agora) _sessoes.TryRemove(chave, out _);
+    }
+
+    private static string HashToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
+
+    // Hash válido de uma senha qualquer: usado para gastar o mesmo tempo quando o e-mail não existe
+    private static readonly string HashFalso = GerarHash("senha-inexistente-" + Guid.NewGuid());
 
 
     // ---------- validação ----------
@@ -97,10 +192,24 @@ public static class Contas
         if (string.IsNullOrWhiteSpace(d.Sobrenome) || d.Sobrenome.Trim().Length > 80) return "Informe o sobrenome (até 80 caracteres).";
         if (string.IsNullOrWhiteSpace(d.Email) || !d.Email.Contains('@') || d.Email.Trim().Length > 100) return "Informe um e-mail válido.";
         if (string.IsNullOrEmpty(d.Senha) || d.Senha.Length < 6) return "A senha precisa ter pelo menos 6 caracteres.";
-        if (Digitos(d.Cpf).Length != 11) return "Informe um CPF com 11 dígitos.";
+        if (!CpfValido(Digitos(d.Cpf))) return "CPF inválido. Confira os números.";
         var tel = Digitos(d.Telefone).Length;
         if (tel < 10 || tel > 11) return "Informe um telefone com 10 ou 11 dígitos.";
         return null;
+    }
+
+    // CPF com os dois dígitos verificadores e rejeição de sequências iguais (ex.: 111.111.111-11)
+    private static bool CpfValido(string cpf)
+    {
+        if (cpf.Length != 11 || cpf.Distinct().Count() == 1) return false;
+        for (int t = 9; t < 11; t++)
+        {
+            int soma = 0;
+            for (int i = 0; i < t; i++) soma += (cpf[i] - '0') * (t + 1 - i);
+            int digito = (soma * 10) % 11 % 10;
+            if (cpf[t] - '0' != digito) return false;
+        }
+        return true;
     }
 
     // ---------- senha (PBKDF2) ----------

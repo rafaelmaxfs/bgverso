@@ -1,30 +1,35 @@
-/* ===== Conta do cliente (perfil.html): cadastro e login pelo servidor C# (DeliveryApp/Contas.cs) ===== */
+/* ===== Conta do cliente (perfil.html): cadastro, login e sessão pelo servidor C# (DeliveryApp/Contas.cs) ===== */
 
 const URL_SERVIDOR_CONTA = 'http://localhost:5050';
-const CHAVE_SESSAO = 'bgverso_sessao';
+/* Só o token é guardado no navegador. Os dados do cliente vêm sempre do servidor. */
+const CHAVE_TOKEN = 'bgverso_token';
 
-function lerSessao() {
-    try {
-        return JSON.parse(localStorage.getItem(CHAVE_SESSAO)) || null;
-    } catch (erro) {
-        return null;
-    }
+function lerToken() {
+    return localStorage.getItem(CHAVE_TOKEN);
 }
 
 /* Chama uma rota do servidor. Lança erro com a mensagem do servidor, ou de conexão */
-async function chamarConta(rota, dados) {
+async function chamarConta(rota, { metodo = 'POST', dados = null, comToken = false } = {}) {
+    const cabecalhos = {};
+    if (dados) cabecalhos['Content-Type'] = 'application/json';
+    if (comToken && lerToken()) cabecalhos['Authorization'] = 'Bearer ' + lerToken();
+
     let resposta;
     try {
         resposta = await fetch(URL_SERVIDOR_CONTA + rota, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
+            method: metodo,
+            headers: cabecalhos,
+            body: dados ? JSON.stringify(dados) : undefined
         });
     } catch (erro) {
         throw new Error('Não foi possível conectar ao servidor. Verifique se o programa DeliveryApp está aberto.');
     }
     const corpo = await resposta.json().catch(() => ({}));
-    if (!resposta.ok) throw new Error(corpo.erro || 'Erro ao processar a conta (HTTP ' + resposta.status + ').');
+    if (!resposta.ok) {
+        const erro = new Error(corpo.erro || 'Erro ao processar a conta (HTTP ' + resposta.status + ').');
+        erro.status = resposta.status;
+        throw erro;
+    }
     return corpo;
 }
 
@@ -48,22 +53,60 @@ function preencherPerfilComConta(usuario) {
     });
 }
 
-function atualizarPainelConta() {
-    const sessao = lerSessao();
+/* Mostra o painel de conta (logado) ou os formulários (deslogado) */
+function mostrarEstadoConta(usuario) {
     const painel = document.getElementById('painel-conta-logada');
     const formEntrar = document.getElementById('form-entrar');
     const formCadastro = document.getElementById('form-cadastro');
     if (!painel) return;
 
-    painel.hidden = !sessao;
-    if (formEntrar) formEntrar.hidden = !!sessao;
-    if (formCadastro) formCadastro.hidden = !!sessao;
-    if (sessao) document.getElementById('conta-nome').textContent = sessao.usuario.nome;
+    painel.hidden = !usuario;
+    if (formEntrar) formEntrar.hidden = !!usuario;
+    if (formCadastro) formCadastro.hidden = !!usuario;
+    if (usuario) document.getElementById('conta-nome').textContent = usuario.nome;
+}
+
+/* Ao abrir a página: confere o token no servidor. Token inválido/expirado é descartado */
+async function restaurarSessao() {
+    if (!lerToken()) return mostrarEstadoConta(null);
+    try {
+        const resultado = await chamarConta('/sessao', { metodo: 'GET', comToken: true });
+        preencherPerfilComConta(resultado.usuario);
+        mostrarEstadoConta(resultado.usuario);
+    } catch (erro) {
+        localStorage.removeItem(CHAVE_TOKEN);
+        mostrarEstadoConta(null);
+    }
+}
+
+/* Valida o formato do CPF no navegador (o servidor confere os dígitos verificadores) */
+function cpfTemOnzeDigitos(valor) {
+    return String(valor || '').replace(/\D/g, '').length === 11;
+}
+
+/* Bloqueia o botão durante o envio, para não enviar duas vezes */
+async function comBotaoBloqueado(botao, operacao) {
+    const textoOriginal = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Aguarde...';
+    try {
+        return await operacao();
+    } finally {
+        botao.disabled = false;
+        botao.textContent = textoOriginal;
+    }
 }
 
 function mostrarErro(id, mensagem) {
     const el = document.getElementById(id);
     if (el) el.textContent = mensagem || '';
+}
+
+/* Guarda o token e mostra a conta. Chamado após login ou cadastro bem-sucedidos */
+function iniciarSessao(resultado) {
+    localStorage.setItem(CHAVE_TOKEN, resultado.token);
+    preencherPerfilComConta(resultado.usuario);
+    mostrarEstadoConta(resultado.usuario);
 }
 
 function configurarConta() {
@@ -75,15 +118,16 @@ function configurarConta() {
     formEntrar.addEventListener('submit', async (evento) => {
         evento.preventDefault();
         mostrarErro('erro-entrar', '');
+        const email = document.getElementById('entrar-email').value.trim();
+        const senha = document.getElementById('entrar-senha').value;
+        if (!email || !senha) return mostrarErro('erro-entrar', 'Informe e-mail e senha.');
+
+        const botao = formEntrar.querySelector('button[type="submit"]');
         try {
-            const resultado = await chamarConta('/login', {
-                email: document.getElementById('entrar-email').value.trim(),
-                senha: document.getElementById('entrar-senha').value
-            });
-            localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ usuario: resultado.usuario }));
-            preencherPerfilComConta(resultado.usuario);
-            document.getElementById('entrar-senha').value = '';
-            atualizarPainelConta();
+            const resultado = await comBotaoBloqueado(botao, () =>
+                chamarConta('/login', { dados: { email, senha } }));
+            iniciarSessao(resultado);
+            formEntrar.reset();
         } catch (erro) {
             mostrarErro('erro-entrar', erro.message);
         }
@@ -92,30 +136,41 @@ function configurarConta() {
     formCadastro.addEventListener('submit', async (evento) => {
         evento.preventDefault();
         mostrarErro('erro-cadastro', '');
+        const dados = {
+            nome: document.getElementById('cadastro-nome').value.trim(),
+            sobrenome: document.getElementById('cadastro-sobrenome').value.trim(),
+            email: document.getElementById('cadastro-email').value.trim(),
+            cpf: document.getElementById('cadastro-cpf').value,
+            telefone: document.getElementById('cadastro-telefone').value,
+            senha: document.getElementById('cadastro-senha').value
+        };
+        const confirmacao = document.getElementById('cadastro-senha-confirma').value;
+
+        if (Object.values(dados).some((v) => !v)) return mostrarErro('erro-cadastro', 'Preencha todos os campos.');
+        if (dados.senha !== confirmacao) return mostrarErro('erro-cadastro', 'As senhas não conferem.');
+        if (!cpfTemOnzeDigitos(dados.cpf)) return mostrarErro('erro-cadastro', 'O CPF precisa ter 11 dígitos.');
+
+        const botao = formCadastro.querySelector('button[type="submit"]');
         try {
-            const resultado = await chamarConta('/cadastro', {
-                nome: document.getElementById('cadastro-nome').value.trim(),
-                sobrenome: document.getElementById('cadastro-sobrenome').value.trim(),
-                email: document.getElementById('cadastro-email').value.trim(),
-                cpf: document.getElementById('cadastro-cpf').value,
-                telefone: document.getElementById('cadastro-telefone').value,
-                senha: document.getElementById('cadastro-senha').value
-            });
-            localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ usuario: resultado.usuario }));
-            preencherPerfilComConta(resultado.usuario);
+            const resultado = await comBotaoBloqueado(botao, () => chamarConta('/cadastro', { dados }));
+            iniciarSessao(resultado);
             formCadastro.reset();
-            atualizarPainelConta();
         } catch (erro) {
             mostrarErro('erro-cadastro', erro.message);
         }
     });
 
-    btnSair?.addEventListener('click', () => {
-        localStorage.removeItem(CHAVE_SESSAO);
-        atualizarPainelConta();
+    btnSair?.addEventListener('click', async () => {
+        try {
+            await chamarConta('/logout', { dados: {}, comToken: true });
+        } catch (erro) {
+            // Mesmo sem conexão, o token local é removido
+        }
+        localStorage.removeItem(CHAVE_TOKEN);
+        mostrarEstadoConta(null);
     });
 
-    atualizarPainelConta();
+    restaurarSessao();
 }
 
 configurarConta();
