@@ -33,23 +33,31 @@ async function chamarConta(rota, { metodo = 'POST', dados = null, comToken = fal
     return corpo;
 }
 
-/* Copia os dados da conta para o perfil local, que o checkout (pedido.js) usa */
+/* Copia os dados da conta para a página de Perfil e para o perfil local (usado pelo checkout em pedido.js).
+   Todos os campos de Dados são atualizados, com as mesmas máscaras de perfil-mascaras.js. */
+const CAMPOS_DADOS_CONTA = ['nome', 'sobrenome', 'email', 'cpf', 'telefone', 'whatsapp'];
+
 function preencherPerfilComConta(usuario) {
     let perfilAtual = {};
     try { perfilAtual = JSON.parse(localStorage.getItem('bgverso_perfil')) || {}; } catch (erro) { perfilAtual = {}; }
 
     const perfil = {
         ...perfilAtual,
-        nome: usuario.nome,
-        sobrenome: usuario.sobrenome,
-        email: usuario.email,
-        cpf: usuario.cpf,
-        telefone: usuario.telefone
+        nome: usuario.nome || '',
+        sobrenome: usuario.sobrenome || '',
+        email: usuario.email || '',
+        cpf: usuario.cpf || '',
+        telefone: usuario.telefone || '',
+        whatsapp: perfilAtual.whatsapp || ''
     };
     localStorage.setItem('bgverso_perfil', JSON.stringify(perfil));
-    ['nome', 'sobrenome', 'email', 'cpf', 'telefone'].forEach((id) => {
+
+    CAMPOS_DADOS_CONTA.forEach((id) => {
         const el = document.getElementById(id);
-        if (el) el.value = perfil[id] || '';
+        if (!el) return;
+        el.value = perfil[id] || '';
+        /* Aplica a máscara (CPF/telefone) e avisa os outros scripts que o valor mudou */
+        el.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }
 
