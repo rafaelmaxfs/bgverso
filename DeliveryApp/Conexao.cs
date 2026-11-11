@@ -8,13 +8,15 @@ namespace DeliveryApp;
 // Server=localhost;Port=3306;Database=bgverso;User ID=usuario;Password=senha;SslMode=Preferred
 public static class Conexao
 {
+    // Configuração local padrão, usada quando MYSQL_CONN não está visível para o processo
+    // (acontece quando o Visual Studio foi aberto antes do setx).
+    private const string PadraoLocal = "Server=localhost;Port=3306;Database=bgverso;User ID=root;Password=;SslMode=Preferred";
+
     private static string? _cs;
 
-    // Lida só quando é usada: assim a mensagem de erro é clara (em vez de "type initializer ... threw an exception").
-    private static string Cs => _cs ??= Environment.GetEnvironmentVariable("MYSQL_CONN")
-        ?? throw new InvalidOperationException(
-            "A variável de ambiente MYSQL_CONN não está definida neste processo. " +
-            "Defina-a e feche/reabra o Visual Studio (ou reinicie o programa).");
+    private static string Cs => _cs ??= Environment.GetEnvironmentVariable("MYSQL_CONN") is { Length: > 0 } valor
+        ? valor
+        : PadraoLocal;
 
     public static MySqlConnection Abrir()
     {
