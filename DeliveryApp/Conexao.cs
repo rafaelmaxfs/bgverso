@@ -8,8 +8,13 @@ namespace DeliveryApp;
 // Server=localhost;Port=3306;Database=bgverso;User ID=usuario;Password=senha;SslMode=Preferred
 public static class Conexao
 {
-    private static readonly string Cs = Environment.GetEnvironmentVariable("MYSQL_CONN")
-        ?? throw new InvalidOperationException("Defina a variável de ambiente MYSQL_CONN com a connection string do MySQL.");
+    private static string? _cs;
+
+    // Lida só quando é usada: assim a mensagem de erro é clara (em vez de "type initializer ... threw an exception").
+    private static string Cs => _cs ??= Environment.GetEnvironmentVariable("MYSQL_CONN")
+        ?? throw new InvalidOperationException(
+            "A variável de ambiente MYSQL_CONN não está definida neste processo. " +
+            "Defina-a e feche/reabra o Visual Studio (ou reinicie o programa).");
 
     public static MySqlConnection Abrir()
     {

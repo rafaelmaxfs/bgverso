@@ -93,8 +93,10 @@ public class ServidorPedidos : IDisposable
         }
         catch (Exception ex)
         {
-            _log("Erro ao gravar pedido: " + ex.Message);
-            try { Enviar(resp, 500, new { erro = ex.Message }); } catch (Exception) { }
+            // Mostra a causa real (ex.: MYSQL_CONN ausente), não só o erro externo do .NET
+            var causa = ex.InnerException ?? ex;
+            _log("Erro ao gravar pedido: " + causa.Message);
+            try { Enviar(resp, 500, new { erro = causa.Message }); } catch (Exception) { }
         }
     }
 
