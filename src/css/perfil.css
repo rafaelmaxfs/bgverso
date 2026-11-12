@@ -9,3 +9,6 @@
 .cabecalho-enderecos h1 { margin: 0; letter-spacing: 2px; color: #FFFFFF; }
 .btn-adicionar { border: none; background: none; font-size: 28px; color: #FFFFFF; cursor: pointer; }
 .cartao.coluna > input.apelido-endereco { font-size: 48px; margin-bottom: 1.5vh; color: var(--preto); }
+
+/* Formulários de conta: o atributo hidden precisa vencer o display: flex de .cartao */
+#form-entrar[hidden], #form-cadastro[hidden], #painel-conta-logada[hidden] { display: none; }

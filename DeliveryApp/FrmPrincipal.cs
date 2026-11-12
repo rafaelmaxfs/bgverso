@@ -4,7 +4,7 @@ namespace DeliveryApp;
 public class FrmPrincipal : Form
 {
     private readonly ListBox _log = new() { Dock = DockStyle.Fill, IntegralHeight = false };
-    private MonitorPedidos? _monitor;
+    private ServidorPedidos? _servidor;
 
     public FrmPrincipal()
     {
@@ -34,20 +34,20 @@ public class FrmPrincipal : Form
         Controls.Add(botoes);
         Tema.Aplicar(this);
 
-        Load += (s, e) => IniciarMonitor();
-        FormClosed += (s, e) => _monitor?.Dispose();
+        Load += (s, e) => IniciarServidor();
+        FormClosed += (s, e) => _servidor?.Dispose();
     }
 
-    private void IniciarMonitor()
+    private void IniciarServidor()
     {
         try
         {
-            _monitor = new MonitorPedidos(Registrar);
-            _monitor.Iniciar();
+            _servidor = new ServidorPedidos(Registrar);
+            _servidor.Iniciar();
         }
         catch (Exception ex)
         {
-            Registrar("Erro ao iniciar o monitor: " + ex.Message);
+            Registrar("Erro ao iniciar o servidor de pedidos: " + ex.Message);
         }
     }
 
