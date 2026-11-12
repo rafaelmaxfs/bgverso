@@ -28,7 +28,15 @@ public static class Contas
     // e-mail -> tentativas falhadas e instante do bloqueio
     private static readonly ConcurrentDictionary<string, (int Falhas, DateTime? Ate)> _tentativas = new();
 
-    private sealed record Sessao(string Email, string Nome, string Sobrenome, string Cpf, string Telefone, DateTime Expira);
+    private sealed record Sessao(int IdUsuario, string Email, string Nome, string Sobrenome, string Cpf, string Telefone, DateTime Expira);
+
+    // id_usuario da sessão válida (ou null). Usado pelas rotas do perfil: o id nunca vem do navegador.
+    public static int? IdDaSessao(string? token)
+    {
+        if (string.IsNullOrEmpty(token)) return null;
+        if (!_sessoes.TryGetValue(HashToken(token), out var s) || s.Expira < DateTime.UtcNow) return null;
+        return s.IdUsuario;
+    }
 
     public static ResultadoConta Cadastrar(string json)
     {
@@ -50,6 +58,7 @@ public static class Contas
                 return Erro(409, "Já existe uma conta com este e-mail ou CPF.");
         }
 
+        int idUsuario;
         using (var ins = Cmd(c,
                    "INSERT INTO usuarios (nome,sobrenome,email,senha_hash,cpf,telefone,criado_em) " +
                    "VALUES (@n,@s,@e,@h,@cpf,@tel,NOW())",
@@ -57,10 +66,11 @@ public static class Contas
                    ("@h", GerarHash(d.Senha)), ("@cpf", cpf), ("@tel", telefone)))
         {
             ins.ExecuteNonQuery();
+            idUsuario = (int)ins.LastInsertedId;
         }
 
         // Já deixa o cliente conectado após criar a conta
-        var token = NovaSessao(email, nome, sobrenome, cpf, telefone);
+        var token = NovaSessao(idUsuario, email, nome, sobrenome, cpf, telefone);
         return new ResultadoConta
         {
             Status = 201,
@@ -68,10 +78,10 @@ public static class Contas
         };
     }
 
-    private static string NovaSessao(string email, string nome, string sobrenome, string cpf, string telefone)
+    private static string NovaSessao(int idUsuario, string email, string nome, string sobrenome, string cpf, string telefone)
     {
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
-        _sessoes[HashToken(token)] = new Sessao(email, nome, sobrenome, cpf, telefone, DateTime.UtcNow.Add(ValidadeSessao));
+        _sessoes[HashToken(token)] = new Sessao(idUsuario, email, nome, sobrenome, cpf, telefone, DateTime.UtcNow.Add(ValidadeSessao));
         LimparSessoesExpiradas();
         return token;
     }
@@ -88,7 +98,7 @@ public static class Contas
 
         using var c = Conexao.Abrir();
         using var cmd = Cmd(c,
-            "SELECT nome,sobrenome,email,cpf,telefone,senha_hash FROM usuarios WHERE email=@e LIMIT 1",
+            "SELECT id_usuario,nome,sobrenome,email,cpf,telefone,senha_hash FROM usuarios WHERE email=@e LIMIT 1",
             ("@e", email));
         using var r = cmd.ExecuteReader();
 
@@ -109,7 +119,7 @@ public static class Contas
         var sobrenome = r.GetString("sobrenome");
         var cpf = r.GetString("cpf");
         var telefone = r.GetString("telefone");
-        var token = NovaSessao(email, nome, sobrenome, cpf, telefone);
+        var token = NovaSessao(r.GetInt32("id_usuario"), email, nome, sobrenome, cpf, telefone);
 
         return new ResultadoConta
         {

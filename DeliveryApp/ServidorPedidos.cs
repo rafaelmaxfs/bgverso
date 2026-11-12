@@ -58,7 +58,7 @@ public class ServidorPedidos : IDisposable
         {
             // Permite que o site (aberto em outra origem, ex.: Live Server ou arquivo local) chame este servidor
             resp.Headers["Access-Control-Allow-Origin"] = "*";
-            resp.Headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+            resp.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
             resp.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
 
             if (req.HttpMethod == "OPTIONS")
@@ -86,6 +86,21 @@ public class ServidorPedidos : IDisposable
                 Contas.Sair(TokenDoCabecalho(req));
                 _log("Logout realizado.");
                 Enviar(resp, 200, new { ok = true });
+                return;
+            }
+
+            // Perfil do cliente (ver Perfil.cs): só com sessão válida; o id vem da sessão, nunca do navegador
+            if (rota != null && rota.StartsWith("/perfil", StringComparison.Ordinal))
+            {
+                var idUsuario = Contas.IdDaSessao(TokenDoCabecalho(req));
+                if (idUsuario == null)
+                {
+                    Enviar(resp, 401, new { erro = "Faça login para acessar o perfil." });
+                    return;
+                }
+                var resultadoPerfil = RotaPerfil(req.HttpMethod, rota, idUsuario.Value, corpo);
+                _log($"Perfil {req.HttpMethod} {rota}: HTTP {resultadoPerfil.Status}");
+                Enviar(resp, resultadoPerfil.Status, resultadoPerfil.Corpo);
                 return;
             }
 
@@ -131,6 +146,30 @@ public class ServidorPedidos : IDisposable
             _log("Erro ao gravar pedido: " + causa.Message);
             try { Enviar(resp, 500, new { erro = causa.Message }); } catch (Exception) { }
         }
+    }
+
+    // Roteia /perfil, /perfil/enderecos, /perfil/enderecos/{id}, /perfil/cartoes, /perfil/cartoes/{id}
+    private static ResultadoConta RotaPerfil(string metodo, string rota, int idUsuario, string corpo)
+    {
+        var partes = rota.Trim('/').Split('/');   // ["perfil", ...]
+        int? id = partes.Length == 3 && int.TryParse(partes[2], out var n) ? n : null;
+        string recurso = partes.Length > 1 ? partes[1] : "";
+
+        if (partes.Length == 1 && metodo == "GET") return Perfil.Obter(idUsuario);
+        if (partes.Length == 1 && metodo == "PUT") return Perfil.AtualizarUsuario(idUsuario, corpo);
+
+        if (recurso == "enderecos")
+        {
+            if (partes.Length == 2 && metodo == "POST") return Perfil.CriarEndereco(idUsuario, corpo);
+            if (id != null && metodo == "PUT") return Perfil.AtualizarEndereco(idUsuario, id.Value, corpo);
+            if (id != null && metodo == "DELETE") return Perfil.RemoverEndereco(idUsuario, id.Value);
+        }
+        if (recurso == "cartoes")
+        {
+            if (partes.Length == 2 && metodo == "POST") return Perfil.CriarCartao(idUsuario, corpo);
+            if (id != null && metodo == "DELETE") return Perfil.RemoverCartao(idUsuario, id.Value);
+        }
+        return new ResultadoConta { Status = 404, Corpo = new { erro = "Rota de perfil não encontrada." } };
     }
 
     // Lê "Authorization: Bearer <token>"; devolve null se ausente

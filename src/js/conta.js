@@ -81,6 +81,7 @@ async function restaurarSessao() {
         const resultado = await chamarConta('/sessao', { metodo: 'GET', comToken: true });
         preencherPerfilComConta(resultado.usuario);
         mostrarEstadoConta(resultado.usuario);
+        await sincronizarPerfilDoBanco();
     } catch (erro) {
         localStorage.removeItem(CHAVE_TOKEN);
         mostrarEstadoConta(null);
@@ -111,10 +112,167 @@ function mostrarErro(id, mensagem) {
 }
 
 /* Guarda o token e mostra a conta. Chamado após login ou cadastro bem-sucedidos */
-function iniciarSessao(resultado) {
+async function iniciarSessao(resultado) {
     localStorage.setItem(CHAVE_TOKEN, resultado.token);
     preencherPerfilComConta(resultado.usuario);
     mostrarEstadoConta(resultado.usuario);
+    await sincronizarPerfilDoBanco();
+}
+
+/* ----- Gravação no banco (PUT/POST/DELETE em /perfil) ----- */
+
+/* Envia os dados pessoais da página ao banco. Em caso de erro, relê o banco para desfazer a edição local */
+async function salvarDadosNoBanco() {
+    if (!lerToken()) return;
+    const valor = (id) => (document.getElementById(id)?.value || '').trim();
+    try {
+        const r = await chamarConta('/perfil', {
+            metodo: 'PUT',
+            dados: {
+                nome: valor('nome'),
+                sobrenome: valor('sobrenome'),
+                email: valor('email'),
+                cpf: valor('cpf'),
+                telefone: valor('telefone')
+            },
+            comToken: true
+        });
+        preencherPerfilComConta(r.usuario);
+        mostrarErro('erro-dados', '');
+    } catch (erro) {
+        mostrarErro('erro-dados', erro.message);
+        await sincronizarPerfilDoBanco();
+    }
+}
+
+/* Campos de Dados salvos ao sair do campo (mesmo gatilho de perfil.js) */
+function configurarSalvarDados() {
+    document.addEventListener('change', (evento) => {
+        if (evento.target.closest('.cartao-dados')) salvarDadosNoBanco();
+    });
+}
+
+/* Endereço alterado na lista. Se o id existe no banco (número), faz PUT; se não (id local), faz POST.
+   Só grava quando o endereço está completo, para não gerar erro de validação a cada tecla. */
+async function salvarEnderecoNoBanco(cartao) {
+    if (!lerToken()) return;
+    const campos = {};
+    cartao.querySelectorAll('[data-campo]').forEach((el) => { campos[el.dataset.campo] = el.value.trim(); });
+    if (!enderecoCompleto(campos)) return;
+
+    const idBanco = /^\d+$/.test(cartao.dataset.id) ? cartao.dataset.id : null;
+    try {
+        if (idBanco) {
+            await chamarConta('/perfil/enderecos/' + idBanco, { metodo: 'PUT', dados: campos, comToken: true });
+        } else {
+            await chamarConta('/perfil/enderecos', { dados: campos, comToken: true });
+        }
+        await sincronizarPerfilDoBanco();
+    } catch (erro) {
+        alert(erro.message);
+        await sincronizarPerfilDoBanco();
+    }
+}
+
+/* Campos mínimos exigidos pelo servidor (ver ValidarEndereco em Perfil.cs) */
+function enderecoCompleto(c) {
+    return c.cep.replace(/\D/g, '').length === 8 && c.rua && c.numero && c.bairro && c.cidade && c.uf.length === 2;
+}
+
+async function removerEnderecoNoBanco(id) {
+    if (!lerToken()) return;
+    try {
+        await chamarConta('/perfil/enderecos/' + id, { metodo: 'DELETE', comToken: true });
+    } catch (erro) {
+        alert(erro.message);
+        await sincronizarPerfilDoBanco();
+    }
+}
+
+async function removerCartaoNoBanco(id) {
+    if (!lerToken()) return;
+    try {
+        await chamarConta('/perfil/cartoes/' + id, { metodo: 'DELETE', comToken: true });
+    } catch (erro) {
+        alert(erro.message);
+        await sincronizarPerfilDoBanco();
+    }
+}
+
+/* Busca o perfil no banco (GET /perfil) e atualiza os espelhos usados pelo site:
+   bgverso_perfil (dados), bgverso_enderecos (endereços) e bgverso_cartoes (cartões).
+   O banco é a fonte da verdade; o navegador só guarda uma cópia. */
+async function sincronizarPerfilDoBanco() {
+    if (!lerToken()) return;
+    try {
+        const p = await chamarConta('/perfil', { metodo: 'GET', comToken: true });
+
+        preencherPerfilComConta(p.usuario);
+
+        /* Endereços: o campo "apelido" e os demais vêm do banco */
+        const enderecos = p.enderecos.map((e) => ({ ...e }));
+        salvarEnderecos(enderecos);
+
+        /* Cartões: o formato do site é { id, bandeira, final, titular, validade } */
+        salvarCartoes(p.cartoes.map((c) => ({ ...c })));
+
+        renderizarEnderecos();
+        renderizarCartoes();
+        atualizarPesquisa();
+    } catch (erro) {
+        /* Sessão inválida: encerra a conta local. Outros erros mantêm a cópia atual */
+        if (erro.status === 401) {
+            localStorage.removeItem(CHAVE_TOKEN);
+            mostrarEstadoConta(null);
+        }
+    }
+}
+
+/* Observa as ações da página (sem impedi-las: perfil.js já atualiza a tela e o localStorage) */
+function configurarGravacaoDoPerfil() {
+    /* Alteração de um campo de endereço */
+    document.getElementById('lista-enderecos')?.addEventListener('change', (evento) => {
+        const cartao = evento.target.closest('.cartao-endereco');
+        if (cartao) salvarEnderecoNoBanco(cartao);
+    });
+
+    /* Remover endereço ou cartão (botões com data-acao, criados por perfil.js) */
+    document.addEventListener('click', (evento) => {
+        const botao = evento.target.closest('[data-acao]');
+        if (!botao) return;
+        if (botao.dataset.acao === 'remover-endereco') removerEnderecoNoBanco(botao.dataset.id);
+        if (botao.dataset.acao === 'remover-cartao') removerCartaoNoBanco(botao.dataset.id);
+    });
+
+    /* Cartão novo: o formulário (perfil.js) só salva quando a validação passa.
+       Então, se o formulário foi válido, o último cartão salvo é o que deve ir ao banco. */
+    /* Fase de captura: roda antes do handler de perfil.js, então a contagem "antes" é a real */
+    let quantidadeAntes = 0;
+    document.getElementById('form-cartao')?.addEventListener('submit', () => {
+        quantidadeAntes = lerCartoes().length;
+    }, true);
+    document.getElementById('form-cartao')?.addEventListener('submit', () => {
+        setTimeout(() => {
+            if (lerCartoes().length <= quantidadeAntes) return;   /* validação falhou: nada novo foi salvo */
+            enviarCartaoParaBanco({
+                numero: document.getElementById('cartao-numero').value,
+                titular: document.getElementById('cartao-titular').value,
+                validade: document.getElementById('cartao-validade').value,
+                cvv: document.getElementById('cartao-cvv').value
+            });
+        }, 0);
+    });
+}
+
+/* Cartão novo: o servidor descarta o CVV e guarda só bandeira e últimos 4 dígitos */
+async function enviarCartaoParaBanco(dados) {
+    try {
+        await chamarConta('/perfil/cartoes', { dados, comToken: true });
+        await sincronizarPerfilDoBanco();
+    } catch (erro) {
+        alert(erro.message);
+        await sincronizarPerfilDoBanco();
+    }
 }
 
 function configurarConta() {
@@ -134,7 +292,7 @@ function configurarConta() {
         try {
             const resultado = await comBotaoBloqueado(botao, () =>
                 chamarConta('/login', { dados: { email, senha } }));
-            iniciarSessao(resultado);
+            await iniciarSessao(resultado);
             formEntrar.reset();
         } catch (erro) {
             mostrarErro('erro-entrar', erro.message);
@@ -161,7 +319,7 @@ function configurarConta() {
         const botao = formCadastro.querySelector('button[type="submit"]');
         try {
             const resultado = await comBotaoBloqueado(botao, () => chamarConta('/cadastro', { dados }));
-            iniciarSessao(resultado);
+            await iniciarSessao(resultado);
             formCadastro.reset();
         } catch (erro) {
             mostrarErro('erro-cadastro', erro.message);
@@ -178,6 +336,8 @@ function configurarConta() {
         mostrarEstadoConta(null);
     });
 
+    configurarSalvarDados();
+    configurarGravacaoDoPerfil();
     restaurarSessao();
 }
 
